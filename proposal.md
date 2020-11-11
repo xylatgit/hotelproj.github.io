@@ -2,8 +2,12 @@ Hotel Project Proposal
 ================
 11/6/2020
 
+<<<<<<< HEAD
+# Proposal
+=======
 Proposal
 ========
+>>>>>>> 07b31b45a3bf272e46cbc262ccb6d1bd4f0d82c8
 
 ### Group Member:
 
@@ -42,6 +46,21 @@ and HTML coding.
   
 Data was obtained directly from the hotels’ PMS databases’ servers by
 executing a TSQL query on SQL Server Studio Manager. (Antonio, et.al)
+<<<<<<< HEAD
+(<https://www.kaggle.com/jessemostipak/hotel-booking-demand)\>  
+
+### Timeline
+
+  - Nov 6 - Nov 10
+      - Brainstorm questions that could be answered by the dataset  
+  - Nov 13 - Nov 28
+      - Overview of the dataset
+      - EDA and visualization
+      - Prediction model on order cancellation
+  - Nov 28 - Dec 5
+      - Webpage construction
+      - Made explanatory video
+=======
 (<a href="https://www.kaggle.com/jessemostipak/hotel-booking-demand)\" class="uri">https://www.kaggle.com/jessemostipak/hotel-booking-demand)\</a>  
 
 ### Timeline
@@ -55,3 +74,4 @@ executing a TSQL query on SQL Server Studio Manager. (Antonio, et.al)
 -   Nov 28 - Dec 5
     -   Webpage construction
     -   Made explanatory video
+>>>>>>> 07b31b45a3bf272e46cbc262ccb6d1bd4f0d82c8
