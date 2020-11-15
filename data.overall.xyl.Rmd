@@ -73,8 +73,19 @@ cor_matrix %>% knitr::kable()
 
 cor_plot<-ggcorrplot(cor_matrix)
 cor_plot
+```
+
+Find correlation between "is_canceled" and all other variables.
+```{r}
+is_canceled_df <- num_var_df %>%
+    mutate(is_canceled=hotel_whole_df$is_canceled) %>%
+    relocate(is_canceled,everything())
 
 
+
+c<-cor(is_canceled_df[-1],as.numeric(is_canceled_df$is_canceled)) %>%abs() 
+c<-c[order(c[,1],decreasing = T),]
+c %>% knitr::kable()
 ```
 
 

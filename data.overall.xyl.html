@@ -599,6 +599,78 @@ cor_matrix %&gt;% knitr::kable()</code></pre>
 cor_plot&lt;-ggcorrplot(cor_matrix)
 cor_plot</code></pre>
 <p><img src="data.overall.xyl_files/figure-html/correlation-1.png" width="672" /></p>
+<p>Find correlation between “is_canceled” and all other variables.</p>
+<pre class="r"><code>is_canceled_df &lt;- num_var_df %&gt;%
+    mutate(is_canceled=hotel_whole_df$is_canceled) %&gt;%
+    relocate(is_canceled,everything())
+
+
+
+c&lt;-cor(is_canceled_df[-1],as.numeric(is_canceled_df$is_canceled)) %&gt;%abs() 
+c&lt;-c[order(c[,1],decreasing = T),]
+c %&gt;% knitr::kable()</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="right">x</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">total_of_special_requests</td>
+<td align="right">0.3417540</td>
+</tr>
+<tr class="even">
+<td align="left">lead_time</td>
+<td align="right">0.3121291</td>
+</tr>
+<tr class="odd">
+<td align="left">required_car_parking_spaces</td>
+<td align="right">0.1478071</td>
+</tr>
+<tr class="even">
+<td align="left">booking_changes</td>
+<td align="right">0.1342664</td>
+</tr>
+<tr class="odd">
+<td align="left">days_in_waiting_list</td>
+<td align="right">0.1054921</td>
+</tr>
+<tr class="even">
+<td align="left">previous_cancellations</td>
+<td align="right">0.0779964</td>
+</tr>
+<tr class="odd">
+<td align="left">stays_in_week_nights</td>
+<td align="right">0.0688678</td>
+</tr>
+<tr class="even">
+<td align="left">previous_bookings_not_canceled</td>
+<td align="right">0.0520608</td>
+</tr>
+<tr class="odd">
+<td align="left">babies</td>
+<td align="right">0.0285624</td>
+</tr>
+<tr class="even">
+<td align="left">stays_in_weekend_nights</td>
+<td align="right">0.0234928</td>
+</tr>
+<tr class="odd">
+<td align="left">adults</td>
+<td align="right">0.0199720</td>
+</tr>
+<tr class="even">
+<td align="left">children</td>
+<td align="right">0.0179260</td>
+</tr>
+<tr class="odd">
+<td align="left">adr</td>
+<td align="right">0.0160298</td>
+</tr>
+</tbody>
+</table>
 </div>
 
 
