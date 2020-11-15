@@ -1,0 +1,58 @@
+---
+title: "data.overall"
+author: "Xiangyi Liu (xl3048)"
+date: "11/14/2020"
+output: html_document
+---
+
+This is a R Markdown file for data wrangling and correlation plot for numeric variables in our dataset. For clarity, the file is separated from _`data_wrangling.Rmd`_.
+
+```{r setup}
+library(tidyverse)
+library(dplyr)
+library(corrplot)
+```
+
+```{r define path to data, include=FALSE}
+path_to_data = "./data/hotel_bookings.csv"
+```
+
+## manipulated_hotel_bookings.csv
+Compared to the original dataset, the manipulated dataset only contains data for "City Hotel" as for _hotel_ variable and "2016" for _arrival_date_year_ variable.
+Group month by season. Delete variable "arrival_date_month".
+```{r data, include=FALSE}
+hotel_whole_df<-read.csv(file=path_to_data) %>%
+  filter(hotel=="City Hotel",arrival_date_year==2016) %>%
+  mutate(
+    is_canceled = as.factor(is_canceled),
+    is_repeated_guest = as.factor(is_repeated_guest),
+    season = case_when(
+      arrival_date_month %in% c("October","November","December") ~ "Fall",
+      arrival_date_month %in% c("January","February","March") ~ "Winter",
+      arrival_date_month %in% c("April","May","June") ~ "Spring",
+      TRUE ~ "Summer"
+    ) 
+  ) %>%
+  select(-arrival_date_month)
+```
+
+```{r export manipulated data}
+write.csv(hotel_whole_df,file="./data/manipulated_hotel_bookings.csv")
+```
+
+
+## Numeric Variable and Correlation
+Select only numeric variables.
+De-select arrival date information (year-week-day).
+```{r numeric variables}
+num_var_df<- hotel_whole_df %>%
+  select(-arrival_date_week_number,-arrival_date_year,-arrival_date_day_of_month) %>%
+  select(where(is.numeric)) %>%
+  relocate(adr,everything())
+```
+
+```{r correlation plot}
+
+```
+
+
