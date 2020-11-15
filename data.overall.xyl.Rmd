@@ -37,7 +37,7 @@ hotel_whole_df<-read.csv(file=path_to_data) %>%
 ```
 
 ```{r export manipulated data}
-write.csv(hotel_whole_df,file="./data/manipulated_hotel_bookings.csv")
+write.csv(hotel_whole_df,file="./data/manipulated_hotel_bookings.csv",row.names = F)
 ```
 
 
@@ -49,10 +49,12 @@ num_var_df<- hotel_whole_df %>%
   select(-arrival_date_week_number,-arrival_date_year,-arrival_date_day_of_month) %>%
   select(where(is.numeric)) %>%
   relocate(adr,everything())
+
 ```
 
-```{r correlation plot}
-
+```{r correlation}
+cor_matrix<-round(cor(num_var_df),2)
+cor_matrix %>% knitr::kable()
 ```
 
 
