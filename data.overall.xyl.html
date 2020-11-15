@@ -322,6 +322,7 @@ $(document).ready(function () {
 <pre class="r"><code>library(dplyr)
 library(corrplot)</code></pre>
 <pre><code>## corrplot 0.84 loaded</code></pre>
+<pre class="r"><code>library(ggcorrplot)</code></pre>
 <div id="manipulated_hotel_bookings.csv" class="section level2">
 <h2>manipulated_hotel_bookings.csv</h2>
 <p>Compared to the original dataset, the manipulated dataset only contains data for “City Hotel” as for <em>hotel</em> variable and “2016” for <em>arrival_date_year</em> variable. Group month by season. Delete variable “arrival_date_month”.</p>
@@ -582,6 +583,22 @@ cor_matrix %&gt;% knitr::kable()</code></pre>
 </tr>
 </tbody>
 </table>
+<pre class="r"><code># flattenCorrMatrix &lt;- function(cormat, pmat) {
+#   ut &lt;- upper.tri(cormat)
+#   data.frame(
+#     row = rownames(cormat)[row(cormat)[ut]],
+#     column = rownames(cormat)[col(cormat)[ut]],
+#     cor  =(cormat)[ut],
+#     p = pmat[ut]
+#     )
+# }
+# res2&lt;-rcorr(as.matrix(num_var_df))
+# flatten_corr_matrix&lt;-flattenCorrMatrix(res2$r, res2$P)
+# flatten_corr_matrix %&gt;% knitr::kable()
+
+cor_plot&lt;-ggcorrplot(cor_matrix)
+cor_plot</code></pre>
+<p><img src="data.overall.xyl_files/figure-html/correlation-1.png" width="672" /></p>
 </div>
 
 

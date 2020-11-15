@@ -11,6 +11,7 @@ This is a R Markdown file for data wrangling and correlation plot for numeric va
 library(tidyverse)
 library(dplyr)
 library(corrplot)
+library(ggcorrplot)
 ```
 
 ```{r define path to data, include=FALSE}
@@ -55,6 +56,25 @@ num_var_df<- hotel_whole_df %>%
 ```{r correlation}
 cor_matrix<-round(cor(num_var_df),2)
 cor_matrix %>% knitr::kable()
+
+
+# flattenCorrMatrix <- function(cormat, pmat) {
+#   ut <- upper.tri(cormat)
+#   data.frame(
+#     row = rownames(cormat)[row(cormat)[ut]],
+#     column = rownames(cormat)[col(cormat)[ut]],
+#     cor  =(cormat)[ut],
+#     p = pmat[ut]
+#     )
+# }
+# res2<-rcorr(as.matrix(num_var_df))
+# flatten_corr_matrix<-flattenCorrMatrix(res2$r, res2$P)
+# flatten_corr_matrix %>% knitr::kable()
+
+cor_plot<-ggcorrplot(cor_matrix)
+cor_plot
+
+
 ```
 
 
