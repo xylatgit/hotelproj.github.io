@@ -1,0 +1,74 @@
+---
+title: "possible_plots_fyh"
+author: "Yihan Feng"
+date: "11/15/2020"
+output: html_document
+---
+
+
+```{r}
+library(tidyverse)
+library(plotly)
+```
+
+import data, and filter the year 2016 data
+```{r}
+hotel_df <- 
+  read.csv("./data/hotel_bookings.csv") %>%
+  filter(arrival_date_year == "2016") %>%
+  mutate(is_canceled = as.factor(is_canceled))
+```
+
+
+
+Lead time and cancellation
+
+```{r}
+hotel_df %>%
+#  count(is_canceled, lead_time, hotel) %>%
+  plot_ly(
+    x = ~is_canceled, y = ~lead_time,
+    type = "violin", color = ~hotel, colors = "viridis"
+  ) %>%
+  layout(xaxis = list(title = "cancellation"),
+         yaxis = list(title = "lead time (days)"),
+         violinmode = "group")
+```
+
+
+
+
+deposit type and cancellation
+improve: show percentage instead of values
+
+```{r}
+hotel_df %>%
+  count(deposit_type, is_canceled, hotel) %>%
+  plot_ly(
+    x = ~deposit_type, y = ~n,
+    type = "bar", color = ~is_canceled, colors = "viridis"
+  ) %>%
+  layout(xaxis = list(title = "deposit type"),
+         yaxis = list(title = "number of cancellation")
+)
+```
+
+
+
+
+number and type of guest & cancellation
+```{r}
+hotel_df %>%
+  count(is_canceled, adults, children, babies) %>%
+  plot_ly(
+    x = ~is_canceled, y = ~adults, 
+    type = "bar", name = "adults"
+  ) %>%
+  add_trace(y = ~children, 
+            name = "children") %>%
+  add_trace(y = ~babies, 
+            name = "babies") %>%
+  layout(xaxis = list(title = "cancellation"), 
+         yaxis = list(title = "number of guests"), 
+         barmode = "group")
+```
