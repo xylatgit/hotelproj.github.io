@@ -1,0 +1,142 @@
+---
+title: "Possible correlation"
+author: "Zhongqi Yue"
+date: "11/15/2020"
+output: html_document
+---
+
+
+```{r}
+library(tidyverse)
+library(plotly)
+```
+
+Import data and filter the year 2006
+```{r}
+hotel_df = 
+  read.csv("./data/hotel_bookings.csv") %>%
+  filter(arrival_date_year == "2016") %>%
+  mutate(is_canceled = as.factor(is_canceled))
+```
+
+
+
+Room type and cancellation
+
+To see if the difference between the reserved room type and assigned room type could be a reason for cancellation.
+```{r}
+hotel_df %>%
+  select(hotel, is_canceled, reserved_room_type, assigned_room_type) %>% 
+  mutate(
+    room_type_difference = case_when(
+      reserved_room_type == assigned_room_type ~ "NO",
+      reserved_room_type != assigned_room_type ~ "YES"
+      )
+  ) %>% 
+  count(is_canceled, room_type_difference) %>% 
+  plot_ly(
+    x = ~is_canceled, y = ~n,
+    type = "bar", color = ~room_type_difference, colors = "viridis"
+  ) %>%
+  layout(title = "The distribution of cancelation with room type difference",
+         xaxis = list(title = "cancellation"),
+         yaxis = list(title = "the number of cancellations")
+  )
+
+# To see difference condtions for two hotels.
+resort_hotel_df = 
+  hotel_df %>%
+  select(hotel, is_canceled, reserved_room_type, assigned_room_type) %>% 
+  mutate(
+    room_type_difference = case_when(
+      reserved_room_type == assigned_room_type ~ "NO",
+      reserved_room_type != assigned_room_type ~ "YES"
+      )
+  ) %>% 
+  filter(hotel == "Resort Hotel") %>% 
+  count(is_canceled, room_type_difference)
+
+resort_hotel_plot = 
+  resort_hotel_df %>% 
+  plot_ly(
+    x = ~is_canceled, y = ~n,
+    type = "bar", color = ~room_type_difference, colors = "viridis"
+  ) %>%
+  layout(title = "Resort Hotel cancellation distribution with room type difference",
+         xaxis = list(title = "cancellation"),
+         yaxis = list(title = "the number of cancellations")
+  )
+  
+city_hotel_df = 
+  hotel_df %>%
+  select(hotel, is_canceled, reserved_room_type, assigned_room_type) %>% 
+  mutate(
+    room_type_difference = case_when(
+      reserved_room_type == assigned_room_type ~ "NO",
+      reserved_room_type != assigned_room_type ~ "YES"
+      )
+  ) %>% 
+  filter(hotel == "City Hotel") %>% 
+  count(is_canceled, room_type_difference)
+
+city_hotel_plot = 
+  city_hotel_df %>% 
+  plot_ly(
+    x = ~is_canceled, y = ~n,
+    type = "bar", color = ~room_type_difference, colors = "viridis"
+  ) %>% 
+  layout(title = "City Hotel cancellation distribution with room type difference",
+         xaxis = list(title = "cancellation"),
+         yaxis = list(title = "the number of cancellations")
+  )
+
+# Combine two plots.
+subplot(resort_hotel_plot %>% layout(title = "Resort Hotel"), 
+        city_hotel_plot %>% layout(title = "City Hotel"),
+        nrows = 2, shareX = TRUE) %>% 
+  layout(title = "Cancellation distribution with room type difference",
+         xaxis = list(title = "cancellation"),
+         yaxis = list(title = "the number of cancellations")
+  )
+```
+
+Distribution channel and cancellation.
+```{r}
+# Distribution channel for two hotels.
+hotel_df %>% 
+  count(hotel, distribution_channel) %>% 
+  mutate(distribution_channel = fct_reorder(distribution_channel, n)) %>% 
+   plot_ly(x = ~distribution_channel, y = ~n, color = ~hotel,
+           type = "bar",colors = "viridis"
+          ) %>% 
+   layout(title = "Distribution channel of two hotel",
+         xaxis = list(title = "Distribution channel"),
+         yaxis = list(title = "n")
+  )
+
+# Cancellation distribution with distribution channel.
+hotel_df %>% 
+  count(hotel, is_canceled, distribution_channel) %>% 
+  mutate(text_label = str_c("Hotel:", hotel ),
+         is_canceled = fct_reorder(is_canceled, n)) %>% 
+  plot_ly(x = ~is_canceled, y = ~n, color = ~distribution_channel,
+          text = ~text_label, type = "bar",colors = "viridis"
+          ) %>% 
+   layout(title = "Cancellation distribution with distribution channel",
+         xaxis = list(title = "Cacncellation status"),
+         yaxis = list(title = "the number of cancellations")
+  )
+```
+
+Cancellation for hotels: weekday vs. weekend
+```{r}
+hotel_df %>% 
+  select(hotel, is_canceled, stays_in_week_nights, stays_in_weekend_nights) %>%  
+   mutate(text_label = str_c("Hotel:", hotel ) )%>% 
+            plot_ly(x = ~stays_in_weekend_nights, y = ~stays_in_week_nights, color = ~is_canceled,
+          text = ~text_label, type = "scatter",colors = "viridis", mode = "markers"
+          ) 
+```
+
+
+
