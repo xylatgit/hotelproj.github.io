@@ -11,7 +11,7 @@ library(tidyverse)
 library(plotly)
 ```
 
-Import data and filter the year 2006
+Import data and filter the year 2016
 ```{r}
 hotel_df = 
   read.csv("./data/hotel_bookings.csv") %>%
@@ -21,7 +21,7 @@ hotel_df =
 
 
 
-Room type and cancellation
+#### Room type difference and cancellation
 
 To see if the difference between the reserved room type and assigned room type could be a reason for cancellation.
 ```{r}
@@ -87,7 +87,7 @@ subplot(resort_hotel_plot %>% layout(title = "Resort Hotel"),
 ```
 * The cancellation proportion is observed to be higher in "No room tpye difference" group in all conditions. 
 
-Distribution channel and cancellation.
+#### Distribution channel and cancellation.
 ```{r}
 # Distribution channel for two hotels.
 hotel_df %>% 
@@ -115,7 +115,7 @@ hotel_df %>%
 ```
 * The cancellation proportion is observed to be highest in "TA/TO" booking channel.
 
-Cancellation for hotels: weekday vs. weekend
+#### Cancellation for hotels: weekday vs. weekend
 ```{r}
 hotel_df %>% 
   select(hotel, is_canceled, stays_in_week_nights, stays_in_weekend_nights) %>%  
@@ -126,7 +126,7 @@ hotel_df %>%
 ```
 * Currently no meaningful correlation is observed.
 
-Cancellation and Repeated guest
+#### Cancellation and Repeated guest
 ```{r}
 hotel_df %>% 
   select(hotel, is_canceled, is_repeated_guest) %>%
@@ -138,9 +138,9 @@ hotel_df %>%
           ) %>% 
   layout(title = "Cancellation distribution with repeat guest")
 ```
-* Higer cancellation proportion is observed in "Not repeated guest" group.
+* Higher cancellation proportion is observed in "Not repeated guest" group.
 
-Cancellation and Meal
+#### Cancellation and Meal
 ```{r}
 hotel_df %>% 
   select(hotel, is_canceled, meal) %>%
