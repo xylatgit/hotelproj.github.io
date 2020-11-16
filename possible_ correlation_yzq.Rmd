@@ -25,69 +25,56 @@ Room type and cancellation
 
 To see if the difference between the reserved room type and assigned room type could be a reason for cancellation.
 ```{r}
-hotel_df %>%
-  select(hotel, is_canceled, reserved_room_type, assigned_room_type) %>% 
-  mutate(
-    room_type_difference = case_when(
-      reserved_room_type == assigned_room_type ~ "NO",
-      reserved_room_type != assigned_room_type ~ "YES"
-      )
-  ) %>% 
-  count(is_canceled, room_type_difference) %>% 
-  plot_ly(
-    x = ~is_canceled, y = ~n,
-    type = "bar", color = ~room_type_difference, colors = "viridis"
-  ) %>%
-  layout(title = "The distribution of cancelation with room type difference",
-         xaxis = list(title = "cancellation"),
-         yaxis = list(title = "the number of cancellations")
-  )
-
-# To see difference condtions for two hotels.
-resort_hotel_df = 
+room_type_df=
   hotel_df %>%
   select(hotel, is_canceled, reserved_room_type, assigned_room_type) %>% 
   mutate(
     room_type_difference = case_when(
       reserved_room_type == assigned_room_type ~ "NO",
       reserved_room_type != assigned_room_type ~ "YES"
-      )
-  ) %>% 
+      ),
+    is_canceled = recode(is_canceled, "1" = "Canceled", "0" = "Not Canceled")
+  ) 
+
+room_type_df%>%
+  count(is_canceled, room_type_difference)%>% 
+  plot_ly(
+    x = ~room_type_difference, y = ~n,
+    type = "bar", color = ~is_canceled, colors = "viridis"
+  ) %>%
+  layout(title = "The distribution of cancelation with room type difference",
+         xaxis = list(title = "Difference between reserved and assigned room type")
+  )
+
+# To see difference conditions for two hotels.
+resort_hotel_df = 
+  room_type_df %>% 
   filter(hotel == "Resort Hotel") %>% 
   count(is_canceled, room_type_difference)
 
 resort_hotel_plot = 
   resort_hotel_df %>% 
   plot_ly(
-    x = ~is_canceled, y = ~n,
-    type = "bar", color = ~room_type_difference, colors = "viridis"
+    x = ~room_type_difference, y = ~n,
+    type = "bar", color = ~is_canceled, colors = "viridis"
   ) %>%
   layout(title = "Resort Hotel cancellation distribution with room type difference",
-         xaxis = list(title = "cancellation"),
-         yaxis = list(title = "the number of cancellations")
+         xaxis = list(title = "Difference between reserved and assigned room type")
   )
   
 city_hotel_df = 
-  hotel_df %>%
-  select(hotel, is_canceled, reserved_room_type, assigned_room_type) %>% 
-  mutate(
-    room_type_difference = case_when(
-      reserved_room_type == assigned_room_type ~ "NO",
-      reserved_room_type != assigned_room_type ~ "YES"
-      )
-  ) %>% 
+  room_type_df %>%
   filter(hotel == "City Hotel") %>% 
   count(is_canceled, room_type_difference)
 
 city_hotel_plot = 
   city_hotel_df %>% 
   plot_ly(
-    x = ~is_canceled, y = ~n,
-    type = "bar", color = ~room_type_difference, colors = "viridis"
+    x = ~room_type_difference, y = ~n,
+    type = "bar", color = ~is_canceled, colors = "viridis"
   ) %>% 
   layout(title = "City Hotel cancellation distribution with room type difference",
-         xaxis = list(title = "cancellation"),
-         yaxis = list(title = "the number of cancellations")
+         xaxis = list(title = "Difference between reserved and assigned room type")
   )
 
 # Combine two plots.
@@ -95,10 +82,10 @@ subplot(resort_hotel_plot %>% layout(title = "Resort Hotel"),
         city_hotel_plot %>% layout(title = "City Hotel"),
         nrows = 2, shareX = TRUE) %>% 
   layout(title = "Cancellation distribution with room type difference",
-         xaxis = list(title = "cancellation"),
-         yaxis = list(title = "the number of cancellations")
+         xaxis = list(title = "Difference between reserved and assigned room type")
   )
 ```
+* The cancellation proportion is observed to be higher in "No room tpye difference" group in all conditions. 
 
 Distribution channel and cancellation.
 ```{r}
@@ -110,33 +97,61 @@ hotel_df %>%
            type = "bar",colors = "viridis"
           ) %>% 
    layout(title = "Distribution channel of two hotel",
-         xaxis = list(title = "Distribution channel"),
-         yaxis = list(title = "n")
+         xaxis = list(title = "Distribution channel")
   )
 
 # Cancellation distribution with distribution channel.
 hotel_df %>% 
   count(hotel, is_canceled, distribution_channel) %>% 
+  mutate(is_canceled = recode(is_canceled, "1" = "Canceled", "0" = "Not Canceled")) %>% 
   mutate(text_label = str_c("Hotel:", hotel ),
-         is_canceled = fct_reorder(is_canceled, n)) %>% 
-  plot_ly(x = ~is_canceled, y = ~n, color = ~distribution_channel,
+         distribution_channel = fct_reorder(distribution_channel, n)) %>% 
+  plot_ly(x = ~distribution_channel, y = ~n, color = ~is_canceled,
           text = ~text_label, type = "bar",colors = "viridis"
           ) %>% 
    layout(title = "Cancellation distribution with distribution channel",
-         xaxis = list(title = "Cacncellation status"),
-         yaxis = list(title = "the number of cancellations")
+         xaxis = list(title = "Distribution Channel")
   )
 ```
+* The cancellation proportion is observed to be highest in "TA/TO" booking channel.
 
 Cancellation for hotels: weekday vs. weekend
 ```{r}
 hotel_df %>% 
   select(hotel, is_canceled, stays_in_week_nights, stays_in_weekend_nights) %>%  
    mutate(text_label = str_c("Hotel:", hotel ) )%>% 
-            plot_ly(x = ~stays_in_weekend_nights, y = ~stays_in_week_nights, color = ~is_canceled,
+   plot_ly(x = ~stays_in_weekend_nights, y = ~stays_in_week_nights, color = ~is_canceled,
           text = ~text_label, type = "scatter",colors = "viridis", mode = "markers"
           ) 
 ```
+* Currently no meaningful correlation is observed.
 
+Cancellation and Repeated guest
+```{r}
+hotel_df %>% 
+  select(hotel, is_canceled, is_repeated_guest) %>%
+  mutate(is_canceled = recode(is_canceled, "1" = "Canceled", "0" = "Not Canceled"),
+         is_repeated_guest = recode(is_repeated_guest, "1" = "Repeated Guest", "0" = "Not Repeated Guest")) %>%   
+  count(is_repeated_guest, is_canceled ) %>% 
+  plot_ly(x = ~is_repeated_guest, y = ~n, color = ~is_canceled,
+          type = "bar",colors = "viridis"
+          ) %>% 
+  layout(title = "Cancellation distribution with repeat guest")
+```
+* Higer cancellation proportion is observed in "Not repeated guest" group.
 
-
+Cancellation and Meal
+```{r}
+hotel_df %>% 
+  select(hotel, is_canceled, meal) %>%
+  mutate(is_canceled = recode(is_canceled, "1" = "Canceled", "0" = "Not Canceled")) %>% 
+  count(meal, is_canceled) %>% 
+  mutate(meal = fct_reorder(meal, n)) %>% 
+  plot_ly(x = ~meal, y = ~n, color = ~is_canceled,
+          type = "bar",colors = "viridis"
+          )%>% 
+   layout(title = "Cancellation distribution with meal type",
+         xaxis = list(title = "Meal Type")
+  )
+```
+* The cancellation proportion is observed to be highest in "BB" meal type.
