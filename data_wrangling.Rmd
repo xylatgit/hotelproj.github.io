@@ -74,7 +74,7 @@ hotel_df %>%
 
 Home country of guests! 
 
-a lot to improve...
+a lot to improve... hover etc...
 choropleth maps:  
 ```{r}
 hotel_df %>% 
