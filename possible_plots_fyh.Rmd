@@ -21,16 +21,18 @@ hotel_df <-
 
 
 
-Lead time and cancellation
+1. Lead time and cancellation
 
 ```{r}
 hotel_df %>%
-#  count(is_canceled, lead_time, hotel) %>%
+  count(is_canceled, lead_time, hotel) %>%
+  mutate(is_canceled = recode(is_canceled, "1" = "Canceled", "0" = "Not Canceled")) %>%
   plot_ly(
     x = ~is_canceled, y = ~lead_time,
     type = "violin", color = ~hotel, colors = "viridis"
   ) %>%
-  layout(xaxis = list(title = "cancellation"),
+  layout(title = "Cancellation Distribution with Lead Time",
+         xaxis = list(title = "cancellation"),
          yaxis = list(title = "lead time (days)"),
          violinmode = "group")
 ```
@@ -38,37 +40,111 @@ hotel_df %>%
 
 
 
-deposit type and cancellation
-improve: show percentage instead of values
+2. deposit type and cancellation
 
 ```{r}
 hotel_df %>%
-  count(deposit_type, is_canceled, hotel) %>%
+  group_by(is_canceled) %>%
+  count(deposit_type) %>%
+  mutate(is_canceled = recode(is_canceled, "1" = "Canceled", "0" = "Not Canceled"),
+         text_label = str_c("\nTotal Counts: ", n)) %>%
   plot_ly(
-    x = ~deposit_type, y = ~n,
-    type = "bar", color = ~is_canceled, colors = "viridis"
+    x = ~deposit_type, y = ~n, color = ~is_canceled,
+    type = "bar", text = ~text_label, colors = "viridis"
   ) %>%
-  layout(xaxis = list(title = "deposit type"),
-         yaxis = list(title = "number of cancellation")
+  layout(title = "Cancellation Distribution with Deposit Type",
+         xaxis = list(title = "Deposit Type"),
+         yaxis = list(title = "Count"),
+         barmode = "group"
 )
 ```
 
 
 
 
-number and type of guest & cancellation
+3. adult guests & cancellation
 ```{r}
 hotel_df %>%
-  count(is_canceled, adults, children, babies) %>%
+  count(is_canceled, adults) %>%
+  mutate(is_canceled = recode(is_canceled, "1" = "Canceled", "0" = "Not Canceled"),
+         text_label = str_c("Number of Adults: ", adults, "\nCounts: ", n)) %>%
   plot_ly(
-    x = ~is_canceled, y = ~adults, 
-    type = "bar", name = "adults"
-  ) %>%
-  add_trace(y = ~children, 
-            name = "children") %>%
-  add_trace(y = ~babies, 
-            name = "babies") %>%
-  layout(xaxis = list(title = "cancellation"), 
-         yaxis = list(title = "number of guests"), 
-         barmode = "group")
+    x = ~adults, y = ~n, color = ~is_canceled,
+    type = "bar", text = ~text_label, colors = "viridis"
+  ) %>% 
+  layout(title = "Cancellation Distribution with Number of Adult Guests",
+         xaxis = list(title = "Number of Adults"), 
+         yaxis = list(title = "Counts"))
 ```
+
+
+children only & cancellation
+
+```{r}
+hotel_df %>%
+  select(is_canceled, adults, children) %>%
+  filter(adults == 0, children > 0) %>%
+  count(is_canceled, children) %>%
+  mutate(
+    is_canceled = recode(is_canceled, "1" = "Canceled", "0" = "Not Canceled"), 
+    text_label = str_c("Number of Children: ", children, "\nTotal Counts: ", n)) %>%
+  plot_ly(
+    x = ~children, y = ~n, color = ~is_canceled, 
+    type = "bar", text = ~text_label, colors = "viridis"
+  ) %>%
+  layout(title = "Cancellation Distribution with Number of Children Only", 
+         xaxis = list(title = "Number of Children Only"), 
+         yaxis = list(title = "Counts"))
+```
+there are some rows show that the number of adults, children, and babies are all 0?
+
+
+
+4. special requests & cancellation
+
+```{r}
+hotel_df %>%
+  select(is_canceled, total_of_special_requests, hotel) %>%
+  count(total_of_special_requests, is_canceled) %>%
+  mutate(is_canceled = recode(is_canceled, "1" = "Canceled", "0" = "Not Canceled"), 
+         text_label = str_c("\nNumber of Special Requests: ", total_of_special_requests, "\nCounts: ", n)) %>%
+  plot_ly(
+    x = ~total_of_special_requests, y = ~n, color = ~is_canceled,
+    type = "bar", text = ~text_label, colors = "viridis"
+  ) %>%
+  layout(
+    title = "Cancellation Distribution with Number of Special Requests", 
+    xaxis = list(title = "Total Number of Special Requests"), 
+    yaxis = list(title = "Counts")
+  )
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
