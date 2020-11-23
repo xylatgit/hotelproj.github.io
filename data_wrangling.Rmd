@@ -8,6 +8,7 @@ output: html_document
 ```{r setup}
 library(tidyverse)
 library(plotly)
+library(viridis)
 
 knitr::opts_chunk$set(
   fig.width = 6,
@@ -30,12 +31,12 @@ Summary of the dataset:
 
 ```{r}
 hotel_df = read.csv("./data/hotel_bookings.csv")
-skimr::skim(hotel_df)
 ```
   
 produce summary tables for categorical variables:  
 
 ```{r}
+skimr::skim(hotel_df)
 hotel_df %>% 
   select(which(sapply(.,is.character))) %>% 
   gtsummary::tbl_summary(by = hotel)
@@ -79,7 +80,7 @@ choropleth maps:
 ```{r}
 hotel_df %>% 
   select(country, is_canceled) %>% 
-  filter(is_canceled == 1) %>% 
+  filter(is_canceled == 0) %>% 
   group_by(country) %>% 
   summarise(
     total_booking = n(),
@@ -87,8 +88,34 @@ hotel_df %>%
   mutate(
     booking_percent = round(total_booking/sum(total_booking)*100, 2)
   ) %>% 
-  filter(booking_percent > 2) %>% 
-  plot_ly(locations = ~country, z = ~booking_percent, colorscale = "Viridis", type ="choropleth")
+  plot_ly(locations = ~country, z = ~booking_percent, type ="choropleth",
+          colorscale="Viridis", zmin = 0, zmax = 30)
 ```
+
+## Possible ML predictions: 
+
+total NAs:  
+```{r}
+table_NA=
+  hotel_df %>% 
+  summarise_all(funs(sum(is.na(.))))
+
+t(table_NA) %>% 
+  knitr::kable()
+```
+
+
+data preprocessing:  
+
+
+
+correlation:  
+```{r}
+library(`ggcorrplot`)
+```
+
+test/training set split: 
+
+
 
 
