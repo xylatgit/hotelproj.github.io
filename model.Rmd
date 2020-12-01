@@ -1,13 +1,63 @@
 ---
 title: "Model Building"
 output:
-  html_document
+  html_document:
+    code_folding: hide
+    toc: true
+    toc_float: true
   
 ---
+```{r setup, include=FALSE}
+library(tidyverse)
+library(plotly)
+knitr::opts_chunk$set(
+echo = TRUE,
+warning = FALSE,
+fig.width = 9, 
+  fig.height = 9,
+  out.width = "80%"
+)
+options(
+  ggplot2.continuous.colour = "viridis",
+  ggplot2.continuous.fill = "viridis"
+)
+scale_colour_discrete = scale_colour_viridis_d
+scale_fill_discrete = scale_fill_viridis_d
+theme_set(theme_minimal() + theme(legend.position = "bottom"))
+```
 
 <img src="./images/model.jpg">\
 _image source: google_
 
+
+```{r include=FALSE}
+# data import 
+hotel_df = read.csv("./data/hotel_bookings.csv",na = c("", "NA", "NULL")) 
+
+hotel_ml = 
+  hotel_df %>% 
+  mutate(
+    arrival_season = case_when(
+      arrival_date_month %in% c("October","November","December") ~ "Fall",
+      arrival_date_month %in% c("January","February","March") ~ "Winter",
+      arrival_date_month %in% c("April","May","June") ~ "Spring",
+      TRUE ~ "Summer"
+    ),
+    false_room_assignment = case_when(
+      reserved_room_type == assigned_room_type ~ "0",
+      reserved_room_type != assigned_room_type ~ "1"
+    ),
+    false_room_assignment = as.factor(false_room_assignment),
+    is_canceled = as.factor(is_canceled)) %>% 
+    select(-c(arrival_date_year, arrival_date_week_number, arrival_date_day_of_month,
+              arrival_date_month, reservation_status_date, reservation_status, 
+              agent, company, country, reserved_room_type, assigned_room_type)) %>% 
+  mutate_if(is.character, as.factor)
+
+```
+
+#### Overview   
+We are using the [**Hotel Booking Demand Dataset**](https://www.sciencedirect.com/science/article/pii/S2352340918315191) which contains `r nrow(hotel_df)` observations and `r ncol(hotel_df)` variables. Our primary goal is to use this dataset to predict the likelihood of booking cancellation. 
 
 
 
