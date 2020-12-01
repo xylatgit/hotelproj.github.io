@@ -7,24 +7,37 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+
+library(dplyr)
+library(tidyr)
+library(pROC)
+library(purrr)
+library(readr)
 ```
 
-## R Markdown
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+```{r data}
+hotel_ml <- read.csv("./hotel_ml.csv") %>%
+  select(where(is.numeric))
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+hotel_df <- read.csv("./data/hotel_bookings.csv",na = c("", "NA", "NULL")) %>%
+  select(where(is.numeric))
 
-```{r cars}
-summary(cars)
 ```
 
-## Including Plots
+```{r}
+variable_list <- colnames(hotel_df) 
+variable_list <- variable_list[-1]
 
-You can also embed plots, for example:
+compute_auc <- function(x) {
+  as.numeric(auc(roc(hotel_df[["is_canceled"]][!is.na(hotel_df[[x]])], hotel_df[[x]][!is.na(hotel_df[[x]])])))
+}
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+auc_result<-as_tibble(t(combn(variable_list, 1)), 
+          .name_repair = ~ c("var_name"))%>% 
+  mutate(
+    auc = map_dbl(.x = var_name, compute_auc)
+  ) %>% 
+  arrange(-auc)
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
