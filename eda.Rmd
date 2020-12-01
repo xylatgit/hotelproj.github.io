@@ -1,0 +1,13 @@
+---
+title: "Exploratory Analysis"
+output:
+  html_document
+  
+---
+
+<img src="./images/eda_1.jpg">\
+_image source: google_
+
+
+
+

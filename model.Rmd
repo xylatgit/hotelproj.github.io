@@ -1,0 +1,13 @@
+---
+title: "Model Building"
+output:
+  html_document
+  
+---
+
+<img src="./images/model.jpg">\
+_image source: google_
+
+
+
+

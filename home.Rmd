@@ -1,0 +1,16 @@
+---
+title: "Hotel Demanding and Factors on Cancellation"
+output:
+  html_document
+  
+---
+
+_**Yihan Feng, Xiangyi Liu, Bin Yang, Yueqi Zhong**_
+
+<img src="./images/landingpage_cover.jpg">
+_image source: google_
+
+
+
+
+

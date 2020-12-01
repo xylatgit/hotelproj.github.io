@@ -1,13 +1,22 @@
 name: "Yay internet!"
 output_dir: "."
 navbar:
-  title: "Home"
+  title: "Need a Vacation? Book a Hotel!"
   right:
+    - text: "Home"
+      href: home.html
     - text: "About"
       href: about.html
+    - text: "EDA"
+      href: eda.html
+    - text: "Model Building"
+      href: model.html
     - icon: fa-envelope fa-lg
-      href: mailto:<you@youremail.com>
+      href: mailto:<xl3048@cumc.columbia.edu>
     - icon: fa-github fa-lg
-      href: http://github.com/<YOUR_GH_NAME>/
+      href: http://github.com/xylatgit/
 output:
-  html_document
+  html_document:
+    theme: journal
+    css: bootstrap.css
+    
