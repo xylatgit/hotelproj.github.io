@@ -7,6 +7,7 @@ output: html_document
 
 ```{r setup}
 library(tidyverse)
+library(tidymodels)
 library(plotly)
 library(viridis)
 
@@ -31,8 +32,12 @@ scale_fill_discrete = scale_fill_viridis_d
 Summary of the dataset:  
 
 ```{r}
-hotel_df = read.csv("./data/hotel_bookings.csv")
+hotel_df = 
+  read.csv("./data/hotel_bookings.csv",na = c("", "NA", "NULL")) %>% 
+  mutate_if(is.character, as.factor)
 ```
+  
+
   
 produce summary tables for categorical variables:  
 
@@ -93,7 +98,9 @@ hotel_df %>%
           colorscale="Viridis", zmin = 0, zmax = 30)
 ```
 
-#### Modeling:  
+#### Modeling:    
+
+data preprocessing:  
 
 total NAs:  
 ```{r}
@@ -105,55 +112,35 @@ t(table_NA) %>%
   knitr::kable()
 ```
 
-
-data preprocessing:  
 ```{r}
-hotel_df = 
+hotel_ml = 
   hotel_df %>% 
-  mutate_if(is.character, as.factor) %>% 
-  drop_na() %>% 
-  mutate(id =  row_number())
+  mutate(
+    arrival_season = case_when(
+      arrival_date_month %in% c("October","November","December") ~ "Fall",
+      arrival_date_month %in% c("January","February","March") ~ "Winter",
+      arrival_date_month %in% c("April","May","June") ~ "Spring",
+      TRUE ~ "Summer"
+    ),
+    arrival_season = as.factor(arrival_season),
+    reserved_room_type = as.character(reserved_room_type),
+    assigned_room_type = as.character(assigned_room_type),
+    false_room_assignment = case_when(
+      reserved_room_type == assigned_room_type ~ "0",
+      reserved_room_type != assigned_room_type ~ "1"
+    ),
+    false_room_assignment = as.factor(false_room_assignment),
+    is_canceled = as.factor(is_canceled)) %>% 
+    select(-c(arrival_date_year, arrival_date_week_number, arrival_date_day_of_month,
+              arrival_date_month, reservation_status_date, reservation_status, 
+              agent, company, country, reserved_room_type, assigned_room_type)) 
 ```
 
 
 train/test split:  
 ```{r}
-train_df = 
-  sample_n(hotel_df, floor(0.8*nrow(hotel_df)))
-
-test_df =
-  anti_join(hotel_df, train_df, by = "id")  
+set.seed(123)
+hotel_split = initial_split(hotel_ml)
 ```
-
-proportion of cancellation of train/test dataset:  
-```{r}
-train_df %>% 
-  group_by(is_canceled) %>% 
-  summarise(
-    number_of_observations =   n(),
-    proportions = round(number_of_observations / nrow(train_df), 2)
-  ) %>% 
-  knitr::kable()
-  
-test_df %>% 
-  group_by(is_canceled) %>% 
-  summarise(
-    number_of_observations =   n(),
-    proportions = round(number_of_observations / nrow(test_df), 2)
-  ) %>% 
-  knitr::kable()
-```
-
-
-
-
-correlation:  
-```{r}
-library(`ggcorrplot`)
-```
-
-
-
-
 
 
