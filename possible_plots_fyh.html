@@ -317,12 +317,12 @@ $(document).ready(function () {
 
 
 <pre class="r"><code>library(tidyverse)</code></pre>
-<pre><code>## -- Attaching packages ------------------------------------------------------------------------------------------------------------------------------ tidyverse 1.3.0 --</code></pre>
+<pre><code>## -- Attaching packages ---------------------------------------------------------------------------------------------------------------------------------------------- tidyverse 1.3.0 --</code></pre>
 <pre><code>## v ggplot2 3.3.2     v purrr   0.3.4
 ## v tibble  3.0.3     v dplyr   1.0.2
 ## v tidyr   1.1.2     v stringr 1.4.0
 ## v readr   1.3.1     v forcats 0.5.0</code></pre>
-<pre><code>## -- Conflicts --------------------------------------------------------------------------------------------------------------------------------- tidyverse_conflicts() --
+<pre><code>## -- Conflicts ------------------------------------------------------------------------------------------------------------------------------------------------- tidyverse_conflicts() --
 ## x dplyr::filter() masks stats::filter()
 ## x dplyr::lag()    masks stats::lag()</code></pre>
 <pre class="r"><code>library(plotly)</code></pre>
@@ -339,47 +339,372 @@ $(document).ready(function () {
 ##     layout</code></pre>
 <p>import data, and filter the year 2016 data</p>
 <pre class="r"><code>hotel_df &lt;- 
-  read.csv(&quot;./data/hotel_bookings.csv&quot;) %&gt;%
+  read.csv(&quot;./data/hotel_bookings.csv&quot;, na = c(&quot;&quot;, &quot;NA&quot;, &quot;NULL&quot;)) %&gt;%
   filter(arrival_date_year == &quot;2016&quot;) %&gt;%
   mutate(is_canceled = as.factor(is_canceled))</code></pre>
 <ol style="list-style-type: decimal">
-<li>Lead time and cancellation</li>
+<li>Lead time and cancellation Need to change plot type.</li>
 </ol>
-<pre class="r"><code>hotel_df %&gt;%
-  count(is_canceled, lead_time, hotel) %&gt;%
+<pre class="r"><code>lead_time_prop &lt;- 
+  hotel_df %&gt;%
   mutate(is_canceled = recode(is_canceled, &quot;1&quot; = &quot;Canceled&quot;, &quot;0&quot; = &quot;Not Canceled&quot;)) %&gt;%
+  select(hotel, is_canceled, lead_time) %&gt;%
+  group_by(lead_time) %&gt;%
+  summarize(
+    guest_total = n(),
+    guest_canceled = sum(is_canceled == &quot;Canceled&quot;)
+  ) %&gt;%
+  mutate(
+    prop_test = map2(.x = guest_canceled, .y = guest_total, ~prop.test(x = .x, n = .y)),
+    tidy_test = map(.x = prop_test, ~broom::tidy(.x))
+  ) %&gt;%
+  select(-prop_test) %&gt;%
+  unnest() %&gt;%
+  select(lead_time, estimate, conf.low, conf.high)</code></pre>
+<pre><code>## `summarise()` ungrouping output (override with `.groups` argument)</code></pre>
+<pre><code>## Warning: Problem with `mutate()` input `prop_test`.
+## i Chi-squared approximation may be incorrect
+## i Input `prop_test` is `map2(...)`.</code></pre>
+<pre><code>## Warning in prop.test(x = .x, n = .y): Chi-squared approximation may be incorrect</code></pre>
+<pre><code>## Warning: Problem with `mutate()` input `prop_test`.
+## i Chi-squared approximation may be incorrect
+## i Input `prop_test` is `map2(...)`.</code></pre>
+<pre><code>## Warning in prop.test(x = .x, n = .y): Chi-squared approximation may be incorrect</code></pre>
+<pre><code>## Warning: Problem with `mutate()` input `prop_test`.
+## i Chi-squared approximation may be incorrect
+## i Input `prop_test` is `map2(...)`.</code></pre>
+<pre><code>## Warning in prop.test(x = .x, n = .y): Chi-squared approximation may be incorrect</code></pre>
+<pre><code>## Warning: Problem with `mutate()` input `prop_test`.
+## i Chi-squared approximation may be incorrect
+## i Input `prop_test` is `map2(...)`.</code></pre>
+<pre><code>## Warning in prop.test(x = .x, n = .y): Chi-squared approximation may be incorrect</code></pre>
+<pre><code>## Warning: Problem with `mutate()` input `prop_test`.
+## i Chi-squared approximation may be incorrect
+## i Input `prop_test` is `map2(...)`.</code></pre>
+<pre><code>## Warning in prop.test(x = .x, n = .y): Chi-squared approximation may be incorrect</code></pre>
+<pre><code>## Warning: Problem with `mutate()` input `prop_test`.
+## i Chi-squared approximation may be incorrect
+## i Input `prop_test` is `map2(...)`.</code></pre>
+<pre><code>## Warning in prop.test(x = .x, n = .y): Chi-squared approximation may be incorrect</code></pre>
+<pre><code>## Warning: Problem with `mutate()` input `prop_test`.
+## i Chi-squared approximation may be incorrect
+## i Input `prop_test` is `map2(...)`.</code></pre>
+<pre><code>## Warning in prop.test(x = .x, n = .y): Chi-squared approximation may be incorrect</code></pre>
+<pre><code>## Warning: Problem with `mutate()` input `prop_test`.
+## i Chi-squared approximation may be incorrect
+## i Input `prop_test` is `map2(...)`.</code></pre>
+<pre><code>## Warning in prop.test(x = .x, n = .y): Chi-squared approximation may be incorrect</code></pre>
+<pre><code>## Warning: Problem with `mutate()` input `prop_test`.
+## i Chi-squared approximation may be incorrect
+## i Input `prop_test` is `map2(...)`.</code></pre>
+<pre><code>## Warning in prop.test(x = .x, n = .y): Chi-squared approximation may be incorrect</code></pre>
+<pre><code>## Warning: Problem with `mutate()` input `prop_test`.
+## i Chi-squared approximation may be incorrect
+## i Input `prop_test` is `map2(...)`.</code></pre>
+<pre><code>## Warning in prop.test(x = .x, n = .y): Chi-squared approximation may be incorrect</code></pre>
+<pre><code>## Warning: Problem with `mutate()` input `prop_test`.
+## i Chi-squared approximation may be incorrect
+## i Input `prop_test` is `map2(...)`.</code></pre>
+<pre><code>## Warning in prop.test(x = .x, n = .y): Chi-squared approximation may be incorrect</code></pre>
+<pre><code>## Warning: Problem with `mutate()` input `prop_test`.
+## i Chi-squared approximation may be incorrect
+## i Input `prop_test` is `map2(...)`.</code></pre>
+<pre><code>## Warning in prop.test(x = .x, n = .y): Chi-squared approximation may be incorrect</code></pre>
+<pre><code>## Warning: Problem with `mutate()` input `prop_test`.
+## i Chi-squared approximation may be incorrect
+## i Input `prop_test` is `map2(...)`.</code></pre>
+<pre><code>## Warning in prop.test(x = .x, n = .y): Chi-squared approximation may be incorrect</code></pre>
+<pre><code>## Warning: Problem with `mutate()` input `prop_test`.
+## i Chi-squared approximation may be incorrect
+## i Input `prop_test` is `map2(...)`.</code></pre>
+<pre><code>## Warning in prop.test(x = .x, n = .y): Chi-squared approximation may be incorrect</code></pre>
+<pre><code>## Warning: Problem with `mutate()` input `prop_test`.
+## i Chi-squared approximation may be incorrect
+## i Input `prop_test` is `map2(...)`.</code></pre>
+<pre><code>## Warning in prop.test(x = .x, n = .y): Chi-squared approximation may be incorrect</code></pre>
+<pre><code>## Warning: Problem with `mutate()` input `prop_test`.
+## i Chi-squared approximation may be incorrect
+## i Input `prop_test` is `map2(...)`.</code></pre>
+<pre><code>## Warning in prop.test(x = .x, n = .y): Chi-squared approximation may be incorrect</code></pre>
+<pre><code>## Warning: Problem with `mutate()` input `prop_test`.
+## i Chi-squared approximation may be incorrect
+## i Input `prop_test` is `map2(...)`.</code></pre>
+<pre><code>## Warning in prop.test(x = .x, n = .y): Chi-squared approximation may be incorrect</code></pre>
+<pre><code>## Warning: Problem with `mutate()` input `prop_test`.
+## i Chi-squared approximation may be incorrect
+## i Input `prop_test` is `map2(...)`.</code></pre>
+<pre><code>## Warning in prop.test(x = .x, n = .y): Chi-squared approximation may be incorrect</code></pre>
+<pre><code>## Warning: Problem with `mutate()` input `prop_test`.
+## i Chi-squared approximation may be incorrect
+## i Input `prop_test` is `map2(...)`.</code></pre>
+<pre><code>## Warning in prop.test(x = .x, n = .y): Chi-squared approximation may be incorrect</code></pre>
+<pre><code>## Warning: Problem with `mutate()` input `prop_test`.
+## i Chi-squared approximation may be incorrect
+## i Input `prop_test` is `map2(...)`.</code></pre>
+<pre><code>## Warning in prop.test(x = .x, n = .y): Chi-squared approximation may be incorrect</code></pre>
+<pre><code>## Warning: Problem with `mutate()` input `prop_test`.
+## i Chi-squared approximation may be incorrect
+## i Input `prop_test` is `map2(...)`.</code></pre>
+<pre><code>## Warning in prop.test(x = .x, n = .y): Chi-squared approximation may be incorrect</code></pre>
+<pre><code>## Warning: Problem with `mutate()` input `prop_test`.
+## i Chi-squared approximation may be incorrect
+## i Input `prop_test` is `map2(...)`.</code></pre>
+<pre><code>## Warning in prop.test(x = .x, n = .y): Chi-squared approximation may be incorrect</code></pre>
+<pre><code>## Warning: Problem with `mutate()` input `prop_test`.
+## i Chi-squared approximation may be incorrect
+## i Input `prop_test` is `map2(...)`.</code></pre>
+<pre><code>## Warning in prop.test(x = .x, n = .y): Chi-squared approximation may be incorrect</code></pre>
+<pre><code>## Warning: Problem with `mutate()` input `prop_test`.
+## i Chi-squared approximation may be incorrect
+## i Input `prop_test` is `map2(...)`.</code></pre>
+<pre><code>## Warning in prop.test(x = .x, n = .y): Chi-squared approximation may be incorrect</code></pre>
+<pre><code>## Warning: Problem with `mutate()` input `prop_test`.
+## i Chi-squared approximation may be incorrect
+## i Input `prop_test` is `map2(...)`.</code></pre>
+<pre><code>## Warning in prop.test(x = .x, n = .y): Chi-squared approximation may be incorrect</code></pre>
+<pre><code>## Warning: Problem with `mutate()` input `prop_test`.
+## i Chi-squared approximation may be incorrect
+## i Input `prop_test` is `map2(...)`.</code></pre>
+<pre><code>## Warning in prop.test(x = .x, n = .y): Chi-squared approximation may be incorrect</code></pre>
+<pre><code>## Warning: Problem with `mutate()` input `prop_test`.
+## i Chi-squared approximation may be incorrect
+## i Input `prop_test` is `map2(...)`.</code></pre>
+<pre><code>## Warning in prop.test(x = .x, n = .y): Chi-squared approximation may be incorrect</code></pre>
+<pre><code>## Warning: Problem with `mutate()` input `prop_test`.
+## i Chi-squared approximation may be incorrect
+## i Input `prop_test` is `map2(...)`.</code></pre>
+<pre><code>## Warning in prop.test(x = .x, n = .y): Chi-squared approximation may be incorrect</code></pre>
+<pre><code>## Warning: Problem with `mutate()` input `prop_test`.
+## i Chi-squared approximation may be incorrect
+## i Input `prop_test` is `map2(...)`.</code></pre>
+<pre><code>## Warning in prop.test(x = .x, n = .y): Chi-squared approximation may be incorrect</code></pre>
+<pre><code>## Warning: Problem with `mutate()` input `prop_test`.
+## i Chi-squared approximation may be incorrect
+## i Input `prop_test` is `map2(...)`.</code></pre>
+<pre><code>## Warning in prop.test(x = .x, n = .y): Chi-squared approximation may be incorrect</code></pre>
+<pre><code>## Warning: Problem with `mutate()` input `prop_test`.
+## i Chi-squared approximation may be incorrect
+## i Input `prop_test` is `map2(...)`.</code></pre>
+<pre><code>## Warning in prop.test(x = .x, n = .y): Chi-squared approximation may be incorrect</code></pre>
+<pre><code>## Warning: Problem with `mutate()` input `prop_test`.
+## i Chi-squared approximation may be incorrect
+## i Input `prop_test` is `map2(...)`.</code></pre>
+<pre><code>## Warning in prop.test(x = .x, n = .y): Chi-squared approximation may be incorrect</code></pre>
+<pre><code>## Warning: Problem with `mutate()` input `prop_test`.
+## i Chi-squared approximation may be incorrect
+## i Input `prop_test` is `map2(...)`.</code></pre>
+<pre><code>## Warning in prop.test(x = .x, n = .y): Chi-squared approximation may be incorrect</code></pre>
+<pre><code>## Warning: Problem with `mutate()` input `prop_test`.
+## i Chi-squared approximation may be incorrect
+## i Input `prop_test` is `map2(...)`.</code></pre>
+<pre><code>## Warning in prop.test(x = .x, n = .y): Chi-squared approximation may be incorrect</code></pre>
+<pre><code>## Warning: Problem with `mutate()` input `prop_test`.
+## i Chi-squared approximation may be incorrect
+## i Input `prop_test` is `map2(...)`.</code></pre>
+<pre><code>## Warning in prop.test(x = .x, n = .y): Chi-squared approximation may be incorrect</code></pre>
+<pre><code>## Warning: Problem with `mutate()` input `prop_test`.
+## i Chi-squared approximation may be incorrect
+## i Input `prop_test` is `map2(...)`.</code></pre>
+<pre><code>## Warning in prop.test(x = .x, n = .y): Chi-squared approximation may be incorrect</code></pre>
+<pre><code>## Warning: Problem with `mutate()` input `prop_test`.
+## i Chi-squared approximation may be incorrect
+## i Input `prop_test` is `map2(...)`.</code></pre>
+<pre><code>## Warning in prop.test(x = .x, n = .y): Chi-squared approximation may be incorrect</code></pre>
+<pre><code>## Warning: Problem with `mutate()` input `prop_test`.
+## i Chi-squared approximation may be incorrect
+## i Input `prop_test` is `map2(...)`.</code></pre>
+<pre><code>## Warning in prop.test(x = .x, n = .y): Chi-squared approximation may be incorrect</code></pre>
+<pre><code>## Warning: Problem with `mutate()` input `prop_test`.
+## i Chi-squared approximation may be incorrect
+## i Input `prop_test` is `map2(...)`.</code></pre>
+<pre><code>## Warning in prop.test(x = .x, n = .y): Chi-squared approximation may be incorrect</code></pre>
+<pre><code>## Warning: Problem with `mutate()` input `prop_test`.
+## i Chi-squared approximation may be incorrect
+## i Input `prop_test` is `map2(...)`.</code></pre>
+<pre><code>## Warning in prop.test(x = .x, n = .y): Chi-squared approximation may be incorrect</code></pre>
+<pre><code>## Warning: Problem with `mutate()` input `prop_test`.
+## i Chi-squared approximation may be incorrect
+## i Input `prop_test` is `map2(...)`.</code></pre>
+<pre><code>## Warning in prop.test(x = .x, n = .y): Chi-squared approximation may be incorrect</code></pre>
+<pre><code>## Warning: Problem with `mutate()` input `prop_test`.
+## i Chi-squared approximation may be incorrect
+## i Input `prop_test` is `map2(...)`.</code></pre>
+<pre><code>## Warning in prop.test(x = .x, n = .y): Chi-squared approximation may be incorrect</code></pre>
+<pre><code>## Warning: Problem with `mutate()` input `prop_test`.
+## i Chi-squared approximation may be incorrect
+## i Input `prop_test` is `map2(...)`.</code></pre>
+<pre><code>## Warning in prop.test(x = .x, n = .y): Chi-squared approximation may be incorrect</code></pre>
+<pre><code>## Warning: Problem with `mutate()` input `prop_test`.
+## i Chi-squared approximation may be incorrect
+## i Input `prop_test` is `map2(...)`.</code></pre>
+<pre><code>## Warning in prop.test(x = .x, n = .y): Chi-squared approximation may be incorrect</code></pre>
+<pre><code>## Warning: Problem with `mutate()` input `prop_test`.
+## i Chi-squared approximation may be incorrect
+## i Input `prop_test` is `map2(...)`.</code></pre>
+<pre><code>## Warning in prop.test(x = .x, n = .y): Chi-squared approximation may be incorrect</code></pre>
+<pre><code>## Warning: Problem with `mutate()` input `prop_test`.
+## i Chi-squared approximation may be incorrect
+## i Input `prop_test` is `map2(...)`.</code></pre>
+<pre><code>## Warning in prop.test(x = .x, n = .y): Chi-squared approximation may be incorrect</code></pre>
+<pre><code>## Warning: Problem with `mutate()` input `prop_test`.
+## i Chi-squared approximation may be incorrect
+## i Input `prop_test` is `map2(...)`.</code></pre>
+<pre><code>## Warning in prop.test(x = .x, n = .y): Chi-squared approximation may be incorrect</code></pre>
+<pre><code>## Warning: Problem with `mutate()` input `prop_test`.
+## i Chi-squared approximation may be incorrect
+## i Input `prop_test` is `map2(...)`.</code></pre>
+<pre><code>## Warning in prop.test(x = .x, n = .y): Chi-squared approximation may be incorrect</code></pre>
+<pre><code>## Warning: Problem with `mutate()` input `prop_test`.
+## i Chi-squared approximation may be incorrect
+## i Input `prop_test` is `map2(...)`.</code></pre>
+<pre><code>## Warning in prop.test(x = .x, n = .y): Chi-squared approximation may be incorrect</code></pre>
+<pre><code>## Warning: Problem with `mutate()` input `prop_test`.
+## i Chi-squared approximation may be incorrect
+## i Input `prop_test` is `map2(...)`.</code></pre>
+<pre><code>## Warning in prop.test(x = .x, n = .y): Chi-squared approximation may be incorrect</code></pre>
+<pre><code>## Warning: Problem with `mutate()` input `prop_test`.
+## i Chi-squared approximation may be incorrect
+## i Input `prop_test` is `map2(...)`.</code></pre>
+<pre><code>## Warning in prop.test(x = .x, n = .y): Chi-squared approximation may be incorrect</code></pre>
+<pre><code>## Warning: Problem with `mutate()` input `prop_test`.
+## i Chi-squared approximation may be incorrect
+## i Input `prop_test` is `map2(...)`.</code></pre>
+<pre><code>## Warning in prop.test(x = .x, n = .y): Chi-squared approximation may be incorrect</code></pre>
+<pre><code>## Warning: Problem with `mutate()` input `prop_test`.
+## i Chi-squared approximation may be incorrect
+## i Input `prop_test` is `map2(...)`.</code></pre>
+<pre><code>## Warning in prop.test(x = .x, n = .y): Chi-squared approximation may be incorrect</code></pre>
+<pre><code>## Warning: Problem with `mutate()` input `prop_test`.
+## i Chi-squared approximation may be incorrect
+## i Input `prop_test` is `map2(...)`.</code></pre>
+<pre><code>## Warning in prop.test(x = .x, n = .y): Chi-squared approximation may be incorrect</code></pre>
+<pre><code>## Warning: `cols` is now required when using unnest().
+## Please use `cols = c(tidy_test)`</code></pre>
+<pre class="r"><code>lead_time_prop_plot &lt;- 
+  lead_time_prop %&gt;%
   plot_ly(
-    x = ~is_canceled, y = ~lead_time,
-    type = &quot;violin&quot;, color = ~hotel, colors = &quot;viridis&quot;
+    x = ~lead_time, y = ~estimate,
+    type = &quot;scatter&quot;, mode = &quot;markers&quot;, colors = &quot;viridis&quot;
   ) %&gt;%
   layout(title = &quot;Cancellation Distribution with Lead Time&quot;,
          xaxis = list(title = &quot;cancellation&quot;),
-         yaxis = list(title = &quot;lead time (days)&quot;),
-         violinmode = &quot;group&quot;)</code></pre>
-<pre><code>## Warning: &#39;layout&#39; objects don&#39;t have these attributes: &#39;violinmode&#39;
-## Valid attributes include:
-## &#39;font&#39;, &#39;title&#39;, &#39;uniformtext&#39;, &#39;autosize&#39;, &#39;width&#39;, &#39;height&#39;, &#39;margin&#39;, &#39;paper_bgcolor&#39;, &#39;plot_bgcolor&#39;, &#39;separators&#39;, &#39;hidesources&#39;, &#39;showlegend&#39;, &#39;colorway&#39;, &#39;datarevision&#39;, &#39;uirevision&#39;, &#39;editrevision&#39;, &#39;selectionrevision&#39;, &#39;template&#39;, &#39;modebar&#39;, &#39;newshape&#39;, &#39;activeshape&#39;, &#39;meta&#39;, &#39;transition&#39;, &#39;_deprecated&#39;, &#39;clickmode&#39;, &#39;dragmode&#39;, &#39;hovermode&#39;, &#39;hoverdistance&#39;, &#39;spikedistance&#39;, &#39;hoverlabel&#39;, &#39;selectdirection&#39;, &#39;grid&#39;, &#39;calendar&#39;, &#39;xaxis&#39;, &#39;yaxis&#39;, &#39;ternary&#39;, &#39;scene&#39;, &#39;geo&#39;, &#39;mapbox&#39;, &#39;polar&#39;, &#39;radialaxis&#39;, &#39;angularaxis&#39;, &#39;direction&#39;, &#39;orientation&#39;, &#39;editType&#39;, &#39;legend&#39;, &#39;annotations&#39;, &#39;shapes&#39;, &#39;images&#39;, &#39;updatemenus&#39;, &#39;sliders&#39;, &#39;colorscale&#39;, &#39;coloraxis&#39;, &#39;metasrc&#39;, &#39;barmode&#39;, &#39;bargap&#39;, &#39;mapType&#39;</code></pre>
-<div id="htmlwidget-920becce73f2a2a77e57" style="width:672px;height:480px;" class="plotly html-widget"></div>
-<script type="application/json" data-for="htmlwidget-920becce73f2a2a77e57">{"x":{"visdat":{"3fc07eb94107":["function () ","plotlyVisDat"]},"cur_data":"3fc07eb94107","attrs":{"3fc07eb94107":{"x":{},"y":{},"color":{},"colors":"viridis","alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"type":"violin"}},"layout":{"margin":{"b":40,"l":60,"t":25,"r":10},"title":"Cancellation Distribution with Lead Time","xaxis":{"domain":[0,1],"automargin":true,"title":"cancellation","type":"category","categoryorder":"array","categoryarray":["Not Canceled","Canceled"]},"yaxis":{"domain":[0,1],"automargin":true,"title":"lead time (days)"},"violinmode":"group","hovermode":"closest","showlegend":true},"source":"A","config":{"showSendToCloud":false},"data":[{"fillcolor":"rgba(68,1,84,0.5)","x":["Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled"],"y":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120,121,122,123,124,125,126,127,128,129,130,131,132,133,134,135,136,137,138,139,140,141,142,143,144,145,146,147,148,149,150,151,152,153,154,155,156,157,158,159,160,161,162,163,164,165,166,167,168,169,170,171,172,173,174,175,176,177,178,179,180,181,182,183,184,185,186,187,188,189,190,191,192,193,194,195,196,197,198,199,200,201,202,203,204,205,206,207,208,209,210,211,212,213,214,215,216,217,218,219,220,221,222,223,224,225,226,227,228,229,230,231,232,233,234,235,236,237,238,239,240,241,242,243,244,245,246,247,248,249,250,251,252,253,254,255,256,257,258,259,260,261,262,265,266,267,268,269,270,271,272,273,274,275,276,277,278,279,280,281,282,283,284,285,286,287,288,289,290,291,292,294,295,296,297,298,299,300,301,302,303,304,305,306,307,308,309,310,311,313,315,316,317,318,320,323,326,328,330,332,335,336,338,345,346,349,350,352,353,359,377,386,418,422,429,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120,121,122,123,124,125,126,127,128,129,130,131,132,133,134,135,136,137,138,139,140,141,142,143,144,145,146,147,148,149,150,151,152,153,154,155,156,157,158,159,160,161,162,163,164,165,166,167,168,169,170,171,172,173,174,175,176,177,178,179,180,181,182,183,184,185,186,187,188,189,190,191,192,193,194,195,196,197,198,199,200,201,202,203,204,205,206,207,208,209,210,211,212,213,214,215,216,217,218,219,220,221,222,223,224,225,226,227,228,229,230,231,232,233,234,235,236,237,238,239,240,241,242,243,244,245,246,247,248,249,250,251,252,253,254,255,256,257,258,259,260,261,262,263,264,265,266,267,268,269,270,271,272,273,274,275,276,277,278,279,280,281,282,283,284,285,286,287,288,289,290,291,292,293,294,295,296,297,298,300,301,302,303,304,305,307,308,309,310,311,312,313,314,315,316,317,319,320,322,323,324,325,330,331,332,333,335,337,338,341,342,344,346,348,349,350,351,355,358,361,365,372,379,380,381,384,386,391,393,395,398,405,412,418,419,420,422,426,429,433,437,440,443,444,447,451,454,457,461,464,468,475,482,489,496,503,510,517,524,531,538,605,626],"type":"violin","name":"City Hotel","marker":{"color":"rgba(68,1,84,1)","line":{"color":"rgba(68,1,84,1)"}},"line":{"color":"rgba(68,1,84,1)"},"xaxis":"x","yaxis":"y","frame":null},{"fillcolor":"rgba(253,231,37,0.5)","x":["Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Not Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled","Canceled"],"y":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120,121,122,123,124,125,126,127,128,129,130,131,132,133,134,135,136,137,138,139,140,141,142,143,144,145,146,147,148,149,150,151,152,153,154,155,156,157,158,159,160,161,162,163,164,165,166,167,168,169,170,171,172,173,174,175,176,177,178,179,180,181,182,183,184,185,186,187,188,189,190,191,192,193,194,195,196,197,198,199,200,201,202,203,204,205,206,207,208,209,210,211,212,213,214,215,216,217,218,219,220,221,222,223,224,225,226,227,228,229,230,231,232,233,234,235,236,237,238,239,240,241,242,243,244,245,246,247,248,249,250,251,252,253,254,255,256,257,258,259,260,261,262,263,264,265,266,267,268,269,270,271,272,273,274,275,276,277,278,279,280,281,282,283,284,285,286,287,288,289,290,291,292,293,294,295,296,297,298,300,301,302,303,304,305,306,307,308,309,310,311,312,314,315,316,317,318,319,320,321,322,323,324,325,326,327,328,329,330,332,333,334,335,336,337,338,339,340,341,342,343,344,346,347,348,349,350,354,355,356,358,359,360,361,362,363,364,365,366,367,370,373,374,375,376,379,382,383,384,385,386,389,390,394,397,399,400,406,422,424,445,454,468,542,709,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120,121,122,123,124,125,126,127,128,129,130,131,132,133,134,135,136,137,138,139,140,141,142,143,144,145,146,147,148,149,150,151,152,153,154,155,156,157,158,159,160,161,162,163,164,165,166,167,168,169,170,171,172,173,174,175,176,177,178,179,180,181,182,183,184,185,186,187,188,189,190,191,192,193,194,195,196,197,198,199,200,201,202,203,205,206,207,208,209,210,211,212,213,214,215,216,217,218,219,220,221,222,223,224,225,226,227,228,229,230,231,232,233,234,235,236,237,238,239,240,241,242,243,244,245,246,247,248,249,250,251,252,254,255,256,257,258,259,260,261,262,263,264,265,266,267,268,269,270,271,272,273,274,275,276,277,279,280,281,282,283,284,286,287,288,289,290,291,292,293,294,295,296,297,299,301,303,304,305,306,307,308,309,310,311,312,314,315,316,317,318,319,324,325,327,328,329,330,331,332,333,335,336,337,338,339,342,343,345,346,347,348,349,350,353,355,357,360,361,364,368,375,378,383,385,386,393,397,398,403,406,434,435,468],"type":"violin","name":"Resort Hotel","marker":{"color":"rgba(253,231,37,1)","line":{"color":"rgba(253,231,37,1)"}},"line":{"color":"rgba(253,231,37,1)"},"xaxis":"x","yaxis":"y","frame":null}],"highlight":{"on":"plotly_click","persistent":false,"dynamic":false,"selectize":false,"opacityDim":0.2,"selected":{"opacity":1},"debounce":0},"shinyEvents":["plotly_hover","plotly_click","plotly_selected","plotly_relayout","plotly_brushed","plotly_brushing","plotly_clickannotation","plotly_doubleclick","plotly_deselect","plotly_afterplot","plotly_sunburstclick"],"base_url":"https://plot.ly"},"evals":[],"jsHooks":[]}</script>
+         yaxis = list(title = &quot;lead time (days)&quot;)
+         )
+
+lead_time_prop_plot</code></pre>
+<div id="htmlwidget-3ff57037b93607f2c17f" style="width:672px;height:480px;" class="plotly html-widget"></div>
+<script type="application/json" data-for="htmlwidget-3ff57037b93607f2c17f">{"x":{"visdat":{"10183f701f86":["function () ","plotlyVisDat"]},"cur_data":"10183f701f86","attrs":{"10183f701f86":{"x":{},"y":{},"mode":"markers","colors":"viridis","alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"type":"scatter"}},"layout":{"margin":{"b":40,"l":60,"t":25,"r":10},"title":"Cancellation Distribution with Lead Time","xaxis":{"domain":[0,1],"automargin":true,"title":"cancellation"},"yaxis":{"domain":[0,1],"automargin":true,"title":"lead time (days)"},"hovermode":"closest","showlegend":false},"source":"A","config":{"showSendToCloud":false},"data":[{"x":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120,121,122,123,124,125,126,127,128,129,130,131,132,133,134,135,136,137,138,139,140,141,142,143,144,145,146,147,148,149,150,151,152,153,154,155,156,157,158,159,160,161,162,163,164,165,166,167,168,169,170,171,172,173,174,175,176,177,178,179,180,181,182,183,184,185,186,187,188,189,190,191,192,193,194,195,196,197,198,199,200,201,202,203,204,205,206,207,208,209,210,211,212,213,214,215,216,217,218,219,220,221,222,223,224,225,226,227,228,229,230,231,232,233,234,235,236,237,238,239,240,241,242,243,244,245,246,247,248,249,250,251,252,253,254,255,256,257,258,259,260,261,262,263,264,265,266,267,268,269,270,271,272,273,274,275,276,277,278,279,280,281,282,283,284,285,286,287,288,289,290,291,292,293,294,295,296,297,298,299,300,301,302,303,304,305,306,307,308,309,310,311,312,313,314,315,316,317,318,319,320,321,322,323,324,325,326,327,328,329,330,331,332,333,334,335,336,337,338,339,340,341,342,343,344,345,346,347,348,349,350,351,352,353,354,355,356,357,358,359,360,361,362,363,364,365,366,367,368,370,372,373,374,375,376,377,378,379,380,381,382,383,384,385,386,389,390,391,393,394,395,397,398,399,400,403,405,406,412,418,419,420,422,424,426,429,433,434,435,437,440,443,444,445,447,451,454,457,461,464,468,475,482,489,496,503,510,517,524,531,538,542,605,626,709],"y":[0.065075212557227,0.09695603156708,0.102661596958175,0.0966029723991507,0.106939704209329,0.13953488372093,0.128279883381924,0.159574468085106,0.169064748201439,0.226102941176471,0.252155172413793,0.267094017094017,0.273084479371316,0.176056338028169,0.240860215053763,0.280927835051546,0.302267002518892,0.283582089552239,0.319347319347319,0.277936962750716,0.273529411764706,0.308411214953271,0.313291139240506,0.34020618556701,0.274193548387097,0.253846153846154,0.384615384615385,0.375,0.328267477203647,0.278787878787879,0.354748603351955,0.28133704735376,0.347003154574132,0.280276816608997,0.340740740740741,0.336088154269972,0.31437125748503,0.538461538461538,0.359848484848485,0.24907063197026,0.351190476190476,0.303754266211604,0.364372469635628,0.333333333333333,0.441791044776119,0.329931972789116,0.336065573770492,0.267924528301887,0.331838565022422,0.397489539748954,0.368217054263566,0.331550802139037,0.359223300970874,0.311827956989247,0.339055793991416,0.265917602996255,0.503267973856209,0.318681318681319,0.352941176470588,0.311284046692607,0.43298969072165,0.306451612903226,0.329545454545455,0.319148936170213,0.349809885931559,0.425742574257426,0.344262295081967,0.315508021390374,0.651090342679128,0.532467532467532,0.329479768786127,0.566901408450704,0.417777777777778,0.392045454545455,0.450867052023121,0.531073446327684,0.430232558139535,0.355421686746988,0.449367088607595,0.4125,0.269767441860465,0.345794392523364,0.441624365482233,0.306451612903226,0.271186440677966,0.414634146341463,0.478070175438596,0.375,0.301136363636364,0.277372262773723,0.269230769230769,0.458762886597938,0.516129032258065,0.455223880597015,0.455172413793103,0.497907949790795,0.333333333333333,0.316239316239316,0.317460317460317,0.516393442622951,0.369942196531792,0.454148471615721,0.402985074626866,0.492753623188406,0.407894736842105,0.573770491803279,0.590909090909091,0.306122448979592,0.468085106382979,0.474576271186441,0.347457627118644,0.482758620689655,0.422885572139304,0.692640692640693,0.5,0.415686274509804,0.515151515151515,0.39375,0.231638418079096,0.299270072992701,0.458715596330275,0.5,0.237179487179487,0.347107438016529,0.340425531914894,0.311827956989247,0.482517482517482,0.37962962962963,0.378571428571429,0.324324324324324,0.481203007518797,0.492957746478873,0.258620689655172,0.308270676691729,0.343137254901961,0.591836734693878,0.253623188405797,0.593333333333333,0.422764227642276,0.489130434782609,0.505263157894737,0.246031746031746,0.493333333333333,0.441379310344828,0.480769230769231,0.458715596330275,0.525423728813559,0.330097087378641,0.355555555555556,0.527027027027027,0.412587412587413,0.431693989071038,0.316831683168317,0.305555555555556,0.195652173913043,0.525773195876289,0.40625,0.407692307692308,0.683333333333333,0.220125786163522,0.402298850574713,0.5859375,0.421052631578947,0.555555555555556,0.365591397849462,0.410958904109589,0.662983425414365,0.443037974683544,0.635220125786163,0.231707317073171,0.307692307692308,0.216981132075472,0.328,0.291139240506329,0.349397590361446,0.380952380952381,0.435897435897436,0.50354609929078,0.708994708994709,0.503759398496241,0.317365269461078,0.481751824817518,0.56043956043956,0.493150684931507,0.488095238095238,0.4,0.259259259259259,0.371428571428571,0.704081632653061,0.325581395348837,0.381443298969072,0.192307692307692,0.25,0.473684210526316,0.25,0.378378378378378,0.382978723404255,0.347457627118644,0.593333333333333,0.51937984496124,0.508474576271186,0.354166666666667,0.441176470588235,0.554054054054054,0.483333333333333,0.702127659574468,0.484375,0.298507462686567,0.579710144927536,0.304347826086957,0.321428571428571,0.698224852071006,0.608695652173913,0.541935483870968,0.155172413793103,0.23021582733813,0.375,0.304347826086957,0.651162790697674,0.681318681318681,0.211111111111111,0.48780487804878,0.333333333333333,0.430232558139535,0.369565217391304,0.206185567010309,0.373626373626374,0.371428571428571,0.325581395348837,0.522727272727273,0.333333333333333,0.363636363636364,0.446428571428571,0.490566037735849,0.371428571428571,0.295454545454545,0.323529411764706,0.30188679245283,0.609375,0.622222222222222,0.567567567567568,0.379310344827586,0.526315789473684,0.323529411764706,0.692307692307692,0.805369127516778,0.48,0.458333333333333,0.342857142857143,0.5,0.716981132075472,0.692307692307692,0.354838709677419,0.382352941176471,0.590909090909091,0.357142857142857,0.0740740740740741,0.466666666666667,0.816666666666667,0.5,0.444444444444444,0.428571428571429,0.636363636363636,0.9375,0.666666666666667,0.321678321678322,0.65,0.894736842105263,0.555555555555556,0.264705882352941,0.464285714285714,0.191489361702128,0.613636363636364,0.890625,0.739130434782609,0.852173913043478,0.555555555555556,0.913223140495868,0.756756756756757,0.902439024390244,0.851851851851852,0.833333333333333,0.344827586206897,0.75,0.545454545454545,0.463414634146341,0.663636363636364,0.533333333333333,0.666666666666667,0.785714285714286,0.645833333333333,0.489795918367347,0.18348623853211,0.9,0.291666666666667,0.947368421052632,0.151515151515152,0.108108108108108,0.263157894736842,0.333333333333333,0.909090909090909,0.287128712871287,0.942028985507246,0.64,0.844660194174757,0.920634920634921,0.2,0.4,0.634146341463415,0.844827586206897,0.428571428571429,0.25,0.5,0.625,0.866666666666667,0.731707317073171,0.25,0.918918918918919,0.333333333333333,0.6,0.0547945205479452,0,0.652777777777778,0.706896551724138,0.666666666666667,0.941176470588235,0,0.0666666666666667,0.032258064516129,0.25,0.945945945945946,1,0.375,0.933333333333333,0,0.0526315789473684,0.0246913580246914,0.66,0.387096774193548,0.592592592592593,0,0.25,0.0606060606060606,0.0625,0.941176470588235,0.666666666666667,0.0769230769230769,0.75,0.333333333333333,0.6,0.959459459459459,1,0,0.5,0,0.666666666666667,0,1,0.96969696969697,0,0.333333333333333,0.857142857142857,0,0,0.0506329113924051,0.761904761904762,0,0,1,0,1,0,0,0.5,0,0,1,0.96969696969697,1,1,0,0.347222222222222,0.92,0.724137931034483,0.294117647058824,0,0,1,1,0,1,0.0588235294117647,1,0,0,1,1,0.333333333333333,1,0.416666666666667,1,1,0.529411764705882,0,1,0.0666666666666667,1,1,1,1,1,1,1,0,1,1,0.96969696969697,1,1,1,0.784810126582278,1,1,1,1,1,1,1,1,1,1,0,1,1,0],"mode":"markers","type":"scatter","marker":{"color":"rgba(31,119,180,1)","line":{"color":"rgba(31,119,180,1)"}},"error_y":{"color":"rgba(31,119,180,1)"},"error_x":{"color":"rgba(31,119,180,1)"},"line":{"color":"rgba(31,119,180,1)"},"xaxis":"x","yaxis":"y","frame":null}],"highlight":{"on":"plotly_click","persistent":false,"dynamic":false,"selectize":false,"opacityDim":0.2,"selected":{"opacity":1},"debounce":0},"shinyEvents":["plotly_hover","plotly_click","plotly_selected","plotly_relayout","plotly_brushed","plotly_brushing","plotly_clickannotation","plotly_doubleclick","plotly_deselect","plotly_afterplot","plotly_sunburstclick"],"base_url":"https://plot.ly"},"evals":[],"jsHooks":[]}</script>
 <ol start="2" style="list-style-type: decimal">
 <li>deposit type and cancellation</li>
 </ol>
-<pre class="r"><code>hotel_df %&gt;%
-  group_by(is_canceled) %&gt;%
-  count(deposit_type) %&gt;%
-  mutate(is_canceled = recode(is_canceled, &quot;1&quot; = &quot;Canceled&quot;, &quot;0&quot; = &quot;Not Canceled&quot;),
-         text_label = str_c(&quot;\nTotal Counts: &quot;, n)) %&gt;%
-  plot_ly(
-    x = ~deposit_type, y = ~n, color = ~is_canceled,
-    type = &quot;bar&quot;, text = ~text_label, colors = &quot;viridis&quot;
+<pre class="r"><code># final version
+deposit_df &lt;- 
+  hotel_df %&gt;%
+  mutate(is_canceled = recode(is_canceled, &quot;1&quot; = &quot;Canceled&quot;, &quot;0&quot; = &quot;Not Canceled&quot;)) %&gt;%
+  select(hotel, is_canceled, deposit_type)
+
+
+deposit_prop &lt;- 
+  deposit_df %&gt;%
+  group_by(deposit_type, hotel) %&gt;%
+  summarize(
+    guest_total = n(), 
+    guest_canceled = sum(is_canceled == &quot;Canceled&quot;)
   ) %&gt;%
-  layout(title = &quot;Cancellation Distribution with Deposit Type&quot;,
+  mutate(
+    prop_test = map2(.x = guest_canceled, .y = guest_total, ~prop.test(x = .x, n = .y)),
+    tidy_test = map(.x = prop_test, ~broom::tidy(.x))
+  ) %&gt;%
+  select(-prop_test) %&gt;%
+  unnest() %&gt;%
+  select(deposit_type, hotel, estimate, conf.low, conf.high)</code></pre>
+<pre><code>## `summarise()` regrouping output by &#39;deposit_type&#39; (override with `.groups` argument)</code></pre>
+<pre><code>## Warning: Problem with `mutate()` input `prop_test`.
+## i Chi-squared approximation may be incorrect
+## i Input `prop_test` is `map2(...)`.
+## i The error occurred in group 3: deposit_type = &quot;Refundable&quot;.</code></pre>
+<pre><code>## Warning in prop.test(x = .x, n = .y): Chi-squared approximation may be incorrect</code></pre>
+<pre><code>## Warning: `cols` is now required when using unnest().
+## Please use `cols = c(tidy_test)`</code></pre>
+<pre class="r"><code>deposit_prop_plot &lt;- 
+  deposit_prop %&gt;%
+    plot_ly(
+    x = ~deposit_type, y = ~estimate, color = ~hotel,
+    type = &quot;bar&quot;, colors = &quot;viridis&quot;
+  ) %&gt;%
+  layout(title = &quot;Canceled Proportion with Deposit Type&quot;,
          xaxis = list(title = &quot;Deposit Type&quot;),
-         yaxis = list(title = &quot;Count&quot;),
+         yaxis = list(title = &quot;Proportion of Cancellation&quot;), 
          barmode = &quot;group&quot;
+)
+
+deposit_prop_plot</code></pre>
+<div id="htmlwidget-360e51ba4e47f9632f05" style="width:672px;height:480px;" class="plotly html-widget"></div>
+<script type="application/json" data-for="htmlwidget-360e51ba4e47f9632f05">{"x":{"visdat":{"1018a544be3":["function () ","plotlyVisDat"]},"cur_data":"1018a544be3","attrs":{"1018a544be3":{"x":{},"y":{},"color":{},"colors":"viridis","alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"type":"bar"}},"layout":{"margin":{"b":40,"l":60,"t":25,"r":10},"title":"Canceled Proportion with Deposit Type","xaxis":{"domain":[0,1],"automargin":true,"title":"Deposit Type","type":"category","categoryorder":"array","categoryarray":["No Deposit","Non Refund","Refundable"]},"yaxis":{"domain":[0,1],"automargin":true,"title":"Proportion of Cancellation"},"barmode":"group","hovermode":"closest","showlegend":true},"source":"A","config":{"showSendToCloud":false},"data":[{"x":["No Deposit","Non Refund","Refundable"],"y":[0.2953424147454,0.996277495769882,0.333333333333333],"type":"bar","name":"City Hotel","marker":{"color":"rgba(68,1,84,1)","line":{"color":"rgba(68,1,84,1)"}},"textfont":{"color":"rgba(68,1,84,1)"},"error_y":{"color":"rgba(68,1,84,1)"},"error_x":{"color":"rgba(68,1,84,1)"},"xaxis":"x","yaxis":"y","frame":null},{"x":["No Deposit","Non Refund","Refundable"],"y":[0.233039020222159,0.938914027149321,0.0703125],"type":"bar","name":"Resort Hotel","marker":{"color":"rgba(253,231,37,1)","line":{"color":"rgba(253,231,37,1)"}},"textfont":{"color":"rgba(253,231,37,1)"},"error_y":{"color":"rgba(253,231,37,1)"},"error_x":{"color":"rgba(253,231,37,1)"},"xaxis":"x","yaxis":"y","frame":null}],"highlight":{"on":"plotly_click","persistent":false,"dynamic":false,"selectize":false,"opacityDim":0.2,"selected":{"opacity":1},"debounce":0},"shinyEvents":["plotly_hover","plotly_click","plotly_selected","plotly_relayout","plotly_brushed","plotly_brushing","plotly_clickannotation","plotly_doubleclick","plotly_deselect","plotly_afterplot","plotly_sunburstclick"],"base_url":"https://plot.ly"},"evals":[],"jsHooks":[]}</script>
+<pre class="r"><code># Deposit type &amp; cancellation &amp; resort hotel  
+deposit_resort_prop &lt;- 
+  deposit_df %&gt;%
+  filter(hotel == &quot;Resort Hotel&quot;) %&gt;%
+  group_by(deposit_type) %&gt;%
+  summarize(
+    guest_total = n(), 
+    guest_canceled = sum(is_canceled == &quot;Canceled&quot;)
+  ) %&gt;%
+  mutate(
+    prop_test = map2(.x = guest_canceled, .y = guest_total, ~prop.test(x = .x, n = .y)),
+    tidy_test = map(.x = prop_test, ~broom::tidy(.x))
+  ) %&gt;%
+  select(-prop_test) %&gt;%
+  unnest() %&gt;%
+  select(deposit_type, estimate, conf.low, conf.high)</code></pre>
+<pre><code>## `summarise()` ungrouping output (override with `.groups` argument)</code></pre>
+<pre><code>## Warning: `cols` is now required when using unnest().
+## Please use `cols = c(tidy_test)`</code></pre>
+<pre class="r"><code>deposit_resort_prop_plot &lt;- 
+  deposit_resort_prop %&gt;%
+  plot_ly(
+    x = ~deposit_type, y = ~estimate, color = ~deposit_type,
+    type = &quot;bar&quot;, colors = &quot;viridis&quot;
+  ) %&gt;%
+  layout(title = &quot;Resort Hotel Cancellation proportion with Deposit Type&quot;,
+         xaxis = list(title = &quot;Deposit Type&quot;),
+         yaxis = list(title = &quot;Proportion of Cancellation&quot;)
+)
+
+
+# Deposit type &amp; cancellation &amp; city hotel  
+deposit_city_prop &lt;- 
+  deposit_df %&gt;%
+  filter(hotel == &quot;City Hotel&quot;) %&gt;%
+  group_by(deposit_type) %&gt;%
+  summarize(
+    guest_total = n(), 
+    guest_canceled = sum(is_canceled == &quot;Canceled&quot;)
+  ) %&gt;%
+  mutate(
+    prop_test = map2(.x = guest_canceled, .y = guest_total, ~prop.test(x = .x, n = .y)),
+    tidy_test = map(.x = prop_test, ~broom::tidy(.x))
+  ) %&gt;%
+  select(-prop_test) %&gt;%
+  unnest() %&gt;%
+  select(deposit_type, estimate, conf.low, conf.high)</code></pre>
+<pre><code>## `summarise()` ungrouping output (override with `.groups` argument)</code></pre>
+<pre><code>## Warning: Problem with `mutate()` input `prop_test`.
+## i Chi-squared approximation may be incorrect
+## i Input `prop_test` is `map2(...)`.</code></pre>
+<pre><code>## Warning in prop.test(x = .x, n = .y): Chi-squared approximation may be incorrect</code></pre>
+<pre><code>## Warning: `cols` is now required when using unnest().
+## Please use `cols = c(tidy_test)`</code></pre>
+<pre class="r"><code>deposit_city_prop_plot &lt;- 
+  deposit_resort_prop %&gt;%
+  plot_ly(
+    x = ~deposit_type, y = ~estimate, color = ~deposit_type,
+    type = &quot;bar&quot;, colors = &quot;viridis&quot;
+  ) %&gt;%
+  layout(title = &quot;City Hotel Cancellation proportion with Deposit Type&quot;,
+         xaxis = list(title = &quot;Deposit Type&quot;),
+         yaxis = list(title = &quot;Proportion of Cancellation&quot;)
 )</code></pre>
-<div id="htmlwidget-6a327066f855f6ef7abf" style="width:672px;height:480px;" class="plotly html-widget"></div>
-<script type="application/json" data-for="htmlwidget-6a327066f855f6ef7abf">{"x":{"visdat":{"3fc025c956e0":["function () ","plotlyVisDat"]},"cur_data":"3fc025c956e0","attrs":{"3fc025c956e0":{"x":{},"y":{},"text":{},"color":{},"colors":"viridis","alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"type":"bar"}},"layout":{"margin":{"b":40,"l":60,"t":25,"r":10},"title":"Cancellation Distribution with Deposit Type","xaxis":{"domain":[0,1],"automargin":true,"title":"Deposit Type","type":"category","categoryorder":"array","categoryarray":["No Deposit","Non Refund","Refundable"]},"yaxis":{"domain":[0,1],"automargin":true,"title":"Count"},"barmode":"group","hovermode":"closest","showlegend":true},"source":"A","config":{"showSendToCloud":false},"data":[{"x":["No Deposit","Non Refund","Refundable"],"y":[36173,76,121],"text":["<br />Total Counts: 36173","<br />Total Counts: 76","<br />Total Counts: 121"],"type":"bar","name":"Not Canceled","marker":{"color":"rgba(68,1,84,1)","line":{"color":"rgba(68,1,84,1)"}},"textfont":{"color":"rgba(68,1,84,1)"},"error_y":{"color":"rgba(68,1,84,1)"},"error_x":{"color":"rgba(68,1,84,1)"},"xaxis":"x","yaxis":"y","frame":null},{"x":["No Deposit","Non Refund","Refundable"],"y":[13609,6718,10],"text":["<br />Total Counts: 13609","<br />Total Counts: 6718","<br />Total Counts: 10"],"type":"bar","name":"Canceled","marker":{"color":"rgba(253,231,37,1)","line":{"color":"rgba(253,231,37,1)"}},"textfont":{"color":"rgba(253,231,37,1)"},"error_y":{"color":"rgba(253,231,37,1)"},"error_x":{"color":"rgba(253,231,37,1)"},"xaxis":"x","yaxis":"y","frame":null}],"highlight":{"on":"plotly_click","persistent":false,"dynamic":false,"selectize":false,"opacityDim":0.2,"selected":{"opacity":1},"debounce":0},"shinyEvents":["plotly_hover","plotly_click","plotly_selected","plotly_relayout","plotly_brushed","plotly_brushing","plotly_clickannotation","plotly_doubleclick","plotly_deselect","plotly_afterplot","plotly_sunburstclick"],"base_url":"https://plot.ly"},"evals":[],"jsHooks":[]}</script>
 <ol start="3" style="list-style-type: decimal">
 <li>adult guests &amp; cancellation</li>
 </ol>
@@ -394,8 +719,8 @@ $(document).ready(function () {
   layout(title = &quot;Cancellation Distribution with Number of Adult Guests&quot;,
          xaxis = list(title = &quot;Number of Adults&quot;), 
          yaxis = list(title = &quot;Counts&quot;))</code></pre>
-<div id="htmlwidget-01333cc28d4d9568fcdd" style="width:672px;height:480px;" class="plotly html-widget"></div>
-<script type="application/json" data-for="htmlwidget-01333cc28d4d9568fcdd">{"x":{"visdat":{"3fc019107b83":["function () ","plotlyVisDat"]},"cur_data":"3fc019107b83","attrs":{"3fc019107b83":{"x":{},"y":{},"text":{},"color":{},"colors":"viridis","alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"type":"bar"}},"layout":{"margin":{"b":40,"l":60,"t":25,"r":10},"title":"Cancellation Distribution with Number of Adult Guests","xaxis":{"domain":[0,1],"automargin":true,"title":"Number of Adults"},"yaxis":{"domain":[0,1],"automargin":true,"title":"Counts"},"hovermode":"closest","showlegend":true},"source":"A","config":{"showSendToCloud":false},"data":[{"x":[0,1,2,3,4],"y":[168,7807,26248,2120,27],"text":["Number of Adults: 0<br />Counts: 168","Number of Adults: 1<br />Counts: 7807","Number of Adults: 2<br />Counts: 26248","Number of Adults: 3<br />Counts: 2120","Number of Adults: 4<br />Counts: 27"],"type":"bar","name":"Not Canceled","marker":{"color":"rgba(68,1,84,1)","line":{"color":"rgba(68,1,84,1)"}},"textfont":{"color":"rgba(68,1,84,1)"},"error_y":{"color":"rgba(68,1,84,1)"},"error_x":{"color":"rgba(68,1,84,1)"},"xaxis":"x","yaxis":"y","frame":null},{"x":[0,1,2,3,4],"y":[61,3364,15912,995,5],"text":["Number of Adults: 0<br />Counts: 61","Number of Adults: 1<br />Counts: 3364","Number of Adults: 2<br />Counts: 15912","Number of Adults: 3<br />Counts: 995","Number of Adults: 4<br />Counts: 5"],"type":"bar","name":"Canceled","marker":{"color":"rgba(253,231,37,1)","line":{"color":"rgba(253,231,37,1)"}},"textfont":{"color":"rgba(253,231,37,1)"},"error_y":{"color":"rgba(253,231,37,1)"},"error_x":{"color":"rgba(253,231,37,1)"},"xaxis":"x","yaxis":"y","frame":null}],"highlight":{"on":"plotly_click","persistent":false,"dynamic":false,"selectize":false,"opacityDim":0.2,"selected":{"opacity":1},"debounce":0},"shinyEvents":["plotly_hover","plotly_click","plotly_selected","plotly_relayout","plotly_brushed","plotly_brushing","plotly_clickannotation","plotly_doubleclick","plotly_deselect","plotly_afterplot","plotly_sunburstclick"],"base_url":"https://plot.ly"},"evals":[],"jsHooks":[]}</script>
+<div id="htmlwidget-f65502ab1a15f7ac063f" style="width:672px;height:480px;" class="plotly html-widget"></div>
+<script type="application/json" data-for="htmlwidget-f65502ab1a15f7ac063f">{"x":{"visdat":{"10186d3d31f4":["function () ","plotlyVisDat"]},"cur_data":"10186d3d31f4","attrs":{"10186d3d31f4":{"x":{},"y":{},"text":{},"color":{},"colors":"viridis","alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"type":"bar"}},"layout":{"margin":{"b":40,"l":60,"t":25,"r":10},"title":"Cancellation Distribution with Number of Adult Guests","xaxis":{"domain":[0,1],"automargin":true,"title":"Number of Adults"},"yaxis":{"domain":[0,1],"automargin":true,"title":"Counts"},"hovermode":"closest","showlegend":true},"source":"A","config":{"showSendToCloud":false},"data":[{"x":[0,1,2,3,4],"y":[168,7807,26248,2120,27],"text":["Number of Adults: 0<br />Counts: 168","Number of Adults: 1<br />Counts: 7807","Number of Adults: 2<br />Counts: 26248","Number of Adults: 3<br />Counts: 2120","Number of Adults: 4<br />Counts: 27"],"type":"bar","name":"Not Canceled","marker":{"color":"rgba(68,1,84,1)","line":{"color":"rgba(68,1,84,1)"}},"textfont":{"color":"rgba(68,1,84,1)"},"error_y":{"color":"rgba(68,1,84,1)"},"error_x":{"color":"rgba(68,1,84,1)"},"xaxis":"x","yaxis":"y","frame":null},{"x":[0,1,2,3,4],"y":[61,3364,15912,995,5],"text":["Number of Adults: 0<br />Counts: 61","Number of Adults: 1<br />Counts: 3364","Number of Adults: 2<br />Counts: 15912","Number of Adults: 3<br />Counts: 995","Number of Adults: 4<br />Counts: 5"],"type":"bar","name":"Canceled","marker":{"color":"rgba(253,231,37,1)","line":{"color":"rgba(253,231,37,1)"}},"textfont":{"color":"rgba(253,231,37,1)"},"error_y":{"color":"rgba(253,231,37,1)"},"error_x":{"color":"rgba(253,231,37,1)"},"xaxis":"x","yaxis":"y","frame":null}],"highlight":{"on":"plotly_click","persistent":false,"dynamic":false,"selectize":false,"opacityDim":0.2,"selected":{"opacity":1},"debounce":0},"shinyEvents":["plotly_hover","plotly_click","plotly_selected","plotly_relayout","plotly_brushed","plotly_brushing","plotly_clickannotation","plotly_doubleclick","plotly_deselect","plotly_afterplot","plotly_sunburstclick"],"base_url":"https://plot.ly"},"evals":[],"jsHooks":[]}</script>
 <p>children only &amp; cancellation</p>
 <pre class="r"><code>hotel_df %&gt;%
   select(is_canceled, adults, children) %&gt;%
@@ -411,8 +736,8 @@ $(document).ready(function () {
   layout(title = &quot;Cancellation Distribution with Number of Children Only&quot;, 
          xaxis = list(title = &quot;Number of Children Only&quot;), 
          yaxis = list(title = &quot;Counts&quot;))</code></pre>
-<p><div id="htmlwidget-cffa5129eb8601ad505a" style="width:672px;height:480px;" class="plotly html-widget"></div>
-<script type="application/json" data-for="htmlwidget-cffa5129eb8601ad505a">{"x":{"visdat":{"3fc053655f0":["function () ","plotlyVisDat"]},"cur_data":"3fc053655f0","attrs":{"3fc053655f0":{"x":{},"y":{},"text":{},"color":{},"colors":"viridis","alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"type":"bar"}},"layout":{"margin":{"b":40,"l":60,"t":25,"r":10},"title":"Cancellation Distribution with Number of Children Only","xaxis":{"domain":[0,1],"automargin":true,"title":"Number of Children Only"},"yaxis":{"domain":[0,1],"automargin":true,"title":"Counts"},"hovermode":"closest","showlegend":true},"source":"A","config":{"showSendToCloud":false},"data":[{"x":[1,2,3],"y":[2,91,4],"text":["Number of Children: 1<br />Total Counts: 2","Number of Children: 2<br />Total Counts: 91","Number of Children: 3<br />Total Counts: 4"],"type":"bar","name":"Not Canceled","marker":{"color":"rgba(68,1,84,1)","line":{"color":"rgba(68,1,84,1)"}},"textfont":{"color":"rgba(68,1,84,1)"},"error_y":{"color":"rgba(68,1,84,1)"},"error_x":{"color":"rgba(68,1,84,1)"},"xaxis":"x","yaxis":"y","frame":null},{"x":[2,3],"y":[46,2],"text":["Number of Children: 2<br />Total Counts: 46","Number of Children: 3<br />Total Counts: 2"],"type":"bar","name":"Canceled","marker":{"color":"rgba(253,231,37,1)","line":{"color":"rgba(253,231,37,1)"}},"textfont":{"color":"rgba(253,231,37,1)"},"error_y":{"color":"rgba(253,231,37,1)"},"error_x":{"color":"rgba(253,231,37,1)"},"xaxis":"x","yaxis":"y","frame":null}],"highlight":{"on":"plotly_click","persistent":false,"dynamic":false,"selectize":false,"opacityDim":0.2,"selected":{"opacity":1},"debounce":0},"shinyEvents":["plotly_hover","plotly_click","plotly_selected","plotly_relayout","plotly_brushed","plotly_brushing","plotly_clickannotation","plotly_doubleclick","plotly_deselect","plotly_afterplot","plotly_sunburstclick"],"base_url":"https://plot.ly"},"evals":[],"jsHooks":[]}</script> there are some rows show that the number of adults, children, and babies are all 0?</p>
+<div id="htmlwidget-43e447e9bab6fcf5e2ff" style="width:672px;height:480px;" class="plotly html-widget"></div>
+<script type="application/json" data-for="htmlwidget-43e447e9bab6fcf5e2ff">{"x":{"visdat":{"10185ae11a84":["function () ","plotlyVisDat"]},"cur_data":"10185ae11a84","attrs":{"10185ae11a84":{"x":{},"y":{},"text":{},"color":{},"colors":"viridis","alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"type":"bar"}},"layout":{"margin":{"b":40,"l":60,"t":25,"r":10},"title":"Cancellation Distribution with Number of Children Only","xaxis":{"domain":[0,1],"automargin":true,"title":"Number of Children Only"},"yaxis":{"domain":[0,1],"automargin":true,"title":"Counts"},"hovermode":"closest","showlegend":true},"source":"A","config":{"showSendToCloud":false},"data":[{"x":[1,2,3],"y":[2,91,4],"text":["Number of Children: 1<br />Total Counts: 2","Number of Children: 2<br />Total Counts: 91","Number of Children: 3<br />Total Counts: 4"],"type":"bar","name":"Not Canceled","marker":{"color":"rgba(68,1,84,1)","line":{"color":"rgba(68,1,84,1)"}},"textfont":{"color":"rgba(68,1,84,1)"},"error_y":{"color":"rgba(68,1,84,1)"},"error_x":{"color":"rgba(68,1,84,1)"},"xaxis":"x","yaxis":"y","frame":null},{"x":[2,3],"y":[46,2],"text":["Number of Children: 2<br />Total Counts: 46","Number of Children: 3<br />Total Counts: 2"],"type":"bar","name":"Canceled","marker":{"color":"rgba(253,231,37,1)","line":{"color":"rgba(253,231,37,1)"}},"textfont":{"color":"rgba(253,231,37,1)"},"error_y":{"color":"rgba(253,231,37,1)"},"error_x":{"color":"rgba(253,231,37,1)"},"xaxis":"x","yaxis":"y","frame":null}],"highlight":{"on":"plotly_click","persistent":false,"dynamic":false,"selectize":false,"opacityDim":0.2,"selected":{"opacity":1},"debounce":0},"shinyEvents":["plotly_hover","plotly_click","plotly_selected","plotly_relayout","plotly_brushed","plotly_brushing","plotly_clickannotation","plotly_doubleclick","plotly_deselect","plotly_afterplot","plotly_sunburstclick"],"base_url":"https://plot.ly"},"evals":[],"jsHooks":[]}</script>
 <ol start="4" style="list-style-type: decimal">
 <li>special requests &amp; cancellation</li>
 </ol>
@@ -430,8 +755,57 @@ $(document).ready(function () {
     xaxis = list(title = &quot;Total Number of Special Requests&quot;), 
     yaxis = list(title = &quot;Counts&quot;)
   )</code></pre>
-<div id="htmlwidget-8ce0c9fe626541d325a0" style="width:672px;height:480px;" class="plotly html-widget"></div>
-<script type="application/json" data-for="htmlwidget-8ce0c9fe626541d325a0">{"x":{"visdat":{"3fc0760510ab":["function () ","plotlyVisDat"]},"cur_data":"3fc0760510ab","attrs":{"3fc0760510ab":{"x":{},"y":{},"text":{},"color":{},"colors":"viridis","alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"type":"bar"}},"layout":{"margin":{"b":40,"l":60,"t":25,"r":10},"title":"Cancellation Distribution with Number of Special Requests","xaxis":{"domain":[0,1],"automargin":true,"title":"Total Number of Special Requests"},"yaxis":{"domain":[0,1],"automargin":true,"title":"Counts"},"hovermode":"closest","showlegend":true},"source":"A","config":{"showSendToCloud":false},"data":[{"x":[0,1,2,3,4,5],"y":[17462,13332,4702,754,107,13],"text":["<br />Number of Special Requests: 0<br />Counts: 17462","<br />Number of Special Requests: 1<br />Counts: 13332","<br />Number of Special Requests: 2<br />Counts: 4702","<br />Number of Special Requests: 3<br />Counts: 754","<br />Number of Special Requests: 4<br />Counts: 107","<br />Number of Special Requests: 5<br />Counts: 13"],"type":"bar","name":"Not Canceled","marker":{"color":"rgba(68,1,84,1)","line":{"color":"rgba(68,1,84,1)"}},"textfont":{"color":"rgba(68,1,84,1)"},"error_y":{"color":"rgba(68,1,84,1)"},"error_x":{"color":"rgba(68,1,84,1)"},"xaxis":"x","yaxis":"y","frame":null},{"x":[0,1,2,3,4,5],"y":[16165,2926,1060,170,15,1],"text":["<br />Number of Special Requests: 0<br />Counts: 16165","<br />Number of Special Requests: 1<br />Counts: 2926","<br />Number of Special Requests: 2<br />Counts: 1060","<br />Number of Special Requests: 3<br />Counts: 170","<br />Number of Special Requests: 4<br />Counts: 15","<br />Number of Special Requests: 5<br />Counts: 1"],"type":"bar","name":"Canceled","marker":{"color":"rgba(253,231,37,1)","line":{"color":"rgba(253,231,37,1)"}},"textfont":{"color":"rgba(253,231,37,1)"},"error_y":{"color":"rgba(253,231,37,1)"},"error_x":{"color":"rgba(253,231,37,1)"},"xaxis":"x","yaxis":"y","frame":null}],"highlight":{"on":"plotly_click","persistent":false,"dynamic":false,"selectize":false,"opacityDim":0.2,"selected":{"opacity":1},"debounce":0},"shinyEvents":["plotly_hover","plotly_click","plotly_selected","plotly_relayout","plotly_brushed","plotly_brushing","plotly_clickannotation","plotly_doubleclick","plotly_deselect","plotly_afterplot","plotly_sunburstclick"],"base_url":"https://plot.ly"},"evals":[],"jsHooks":[]}</script>
+<div id="htmlwidget-ed9fd86720646a7c53cc" style="width:672px;height:480px;" class="plotly html-widget"></div>
+<script type="application/json" data-for="htmlwidget-ed9fd86720646a7c53cc">{"x":{"visdat":{"101831c5525e":["function () ","plotlyVisDat"]},"cur_data":"101831c5525e","attrs":{"101831c5525e":{"x":{},"y":{},"text":{},"color":{},"colors":"viridis","alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"type":"bar"}},"layout":{"margin":{"b":40,"l":60,"t":25,"r":10},"title":"Cancellation Distribution with Number of Special Requests","xaxis":{"domain":[0,1],"automargin":true,"title":"Total Number of Special Requests"},"yaxis":{"domain":[0,1],"automargin":true,"title":"Counts"},"hovermode":"closest","showlegend":true},"source":"A","config":{"showSendToCloud":false},"data":[{"x":[0,1,2,3,4,5],"y":[17462,13332,4702,754,107,13],"text":["<br />Number of Special Requests: 0<br />Counts: 17462","<br />Number of Special Requests: 1<br />Counts: 13332","<br />Number of Special Requests: 2<br />Counts: 4702","<br />Number of Special Requests: 3<br />Counts: 754","<br />Number of Special Requests: 4<br />Counts: 107","<br />Number of Special Requests: 5<br />Counts: 13"],"type":"bar","name":"Not Canceled","marker":{"color":"rgba(68,1,84,1)","line":{"color":"rgba(68,1,84,1)"}},"textfont":{"color":"rgba(68,1,84,1)"},"error_y":{"color":"rgba(68,1,84,1)"},"error_x":{"color":"rgba(68,1,84,1)"},"xaxis":"x","yaxis":"y","frame":null},{"x":[0,1,2,3,4,5],"y":[16165,2926,1060,170,15,1],"text":["<br />Number of Special Requests: 0<br />Counts: 16165","<br />Number of Special Requests: 1<br />Counts: 2926","<br />Number of Special Requests: 2<br />Counts: 1060","<br />Number of Special Requests: 3<br />Counts: 170","<br />Number of Special Requests: 4<br />Counts: 15","<br />Number of Special Requests: 5<br />Counts: 1"],"type":"bar","name":"Canceled","marker":{"color":"rgba(253,231,37,1)","line":{"color":"rgba(253,231,37,1)"}},"textfont":{"color":"rgba(253,231,37,1)"},"error_y":{"color":"rgba(253,231,37,1)"},"error_x":{"color":"rgba(253,231,37,1)"},"xaxis":"x","yaxis":"y","frame":null}],"highlight":{"on":"plotly_click","persistent":false,"dynamic":false,"selectize":false,"opacityDim":0.2,"selected":{"opacity":1},"debounce":0},"shinyEvents":["plotly_hover","plotly_click","plotly_selected","plotly_relayout","plotly_brushed","plotly_brushing","plotly_clickannotation","plotly_doubleclick","plotly_deselect","plotly_afterplot","plotly_sunburstclick"],"base_url":"https://plot.ly"},"evals":[],"jsHooks":[]}</script>
+<pre class="r"><code># final version
+special_request_df &lt;- 
+  hotel_df %&gt;%
+  mutate(is_canceled = recode(is_canceled, &quot;1&quot; = &quot;Canceled&quot;, &quot;0&quot; = &quot;Not Canceled&quot;)) %&gt;%
+  select(hotel, is_canceled, total_of_special_requests)
+
+
+special_request_prop &lt;- 
+  special_request_df %&gt;%
+  group_by(total_of_special_requests, hotel) %&gt;%
+  summarize(
+    guest_total = n(), 
+    guest_canceled = sum(is_canceled == &quot;Canceled&quot;)
+  ) %&gt;%
+  mutate(
+    prop_test = map2(.x = guest_canceled, .y = guest_total, ~prop.test(x = .x, n = .y)),
+    tidy_test = map(.x = prop_test, ~broom::tidy(.x))
+  ) %&gt;%
+  select(-prop_test) %&gt;%
+  unnest() %&gt;%
+  select(total_of_special_requests, hotel, estimate, conf.low, conf.high)</code></pre>
+<pre><code>## `summarise()` regrouping output by &#39;total_of_special_requests&#39; (override with `.groups` argument)</code></pre>
+<pre><code>## Warning: Problem with `mutate()` input `prop_test`.
+## i Chi-squared approximation may be incorrect
+## i Input `prop_test` is `map2(...)`.
+## i The error occurred in group 6: total_of_special_requests = 5.</code></pre>
+<pre><code>## Warning in prop.test(x = .x, n = .y): Chi-squared approximation may be incorrect</code></pre>
+<pre><code>## Warning: Problem with `mutate()` input `prop_test`.
+## i Chi-squared approximation may be incorrect
+## i Input `prop_test` is `map2(...)`.
+## i The error occurred in group 6: total_of_special_requests = 5.</code></pre>
+<pre><code>## Warning in prop.test(x = .x, n = .y): Chi-squared approximation may be incorrect</code></pre>
+<pre><code>## Warning: `cols` is now required when using unnest().
+## Please use `cols = c(tidy_test)`</code></pre>
+<pre class="r"><code>special_request_prop_plot &lt;- 
+  special_request_prop %&gt;%
+    plot_ly(
+    x = ~total_of_special_requests, y = ~estimate, color = ~hotel,
+    type = &quot;bar&quot;, colors = &quot;viridis&quot;
+  ) %&gt;%
+  layout(title = &quot;Canceled Proportion with Total Number of Special Request&quot;,
+         xaxis = list(title = &quot;Number of Special Requests&quot;),
+         yaxis = list(title = &quot;Proportion of Cancellation&quot;), 
+         barmode = &quot;group&quot;
+)
+
+special_request_prop_plot</code></pre>
+<div id="htmlwidget-333e743427ea8c310a53" style="width:672px;height:480px;" class="plotly html-widget"></div>
+<script type="application/json" data-for="htmlwidget-333e743427ea8c310a53">{"x":{"visdat":{"10183f1f581f":["function () ","plotlyVisDat"]},"cur_data":"10183f1f581f","attrs":{"10183f1f581f":{"x":{},"y":{},"color":{},"colors":"viridis","alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"type":"bar"}},"layout":{"margin":{"b":40,"l":60,"t":25,"r":10},"title":"Canceled Proportion with Total Number of Special Request","xaxis":{"domain":[0,1],"automargin":true,"title":"Number of Special Requests"},"yaxis":{"domain":[0,1],"automargin":true,"title":"Proportion of Cancellation"},"barmode":"group","hovermode":"closest","showlegend":true},"source":"A","config":{"showSendToCloud":false},"data":[{"x":[0,1,2,3,4,5],"y":[0.563481821013751,0.178024157202091,0.168472652218782,0.174629324546952,0.132530120481928,0],"type":"bar","name":"City Hotel","marker":{"color":"rgba(68,1,84,1)","line":{"color":"rgba(68,1,84,1)"}},"textfont":{"color":"rgba(68,1,84,1)"},"error_y":{"color":"rgba(68,1,84,1)"},"error_x":{"color":"rgba(68,1,84,1)"},"xaxis":"x","yaxis":"y","frame":null},{"x":[0,1,2,3,4,5],"y":[0.314001434205809,0.18415956622773,0.215800636267232,0.201892744479495,0.102564102564103,0.2],"type":"bar","name":"Resort Hotel","marker":{"color":"rgba(253,231,37,1)","line":{"color":"rgba(253,231,37,1)"}},"textfont":{"color":"rgba(253,231,37,1)"},"error_y":{"color":"rgba(253,231,37,1)"},"error_x":{"color":"rgba(253,231,37,1)"},"xaxis":"x","yaxis":"y","frame":null}],"highlight":{"on":"plotly_click","persistent":false,"dynamic":false,"selectize":false,"opacityDim":0.2,"selected":{"opacity":1},"debounce":0},"shinyEvents":["plotly_hover","plotly_click","plotly_selected","plotly_relayout","plotly_brushed","plotly_brushing","plotly_clickannotation","plotly_doubleclick","plotly_deselect","plotly_afterplot","plotly_sunburstclick"],"base_url":"https://plot.ly"},"evals":[],"jsHooks":[]}</script>
 
 
 
