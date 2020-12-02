@@ -1,7 +1,10 @@
 ---
 title: "Exploratory Analysis"
 output:
-  html_document
+  html_document:
+    code_folding: hide
+    toc: true
+    toc_float: true
   
 ---
 
@@ -32,14 +35,34 @@ hotel_whole_df <- read.csv("./data/hotel_bookings.csv",na = c("", "NA", "NULL"))
 hotel_df <- hotel_whole_df %>% filter(arrival_date_year==2016)
 ```
 
-The dimension of the original published dataset is `r nrow(hotel_whole_df)` rows by `r ncol(hotel_whole_df)` columns. After filtering instances from year 2016, the resulting dataset has `r nrow(hotel_df)` rows.
+The dimension of the original published dataset is `r nrow(hotel_whole_df)` rows by `r ncol(hotel_whole_df)` columns. After filtering instances from year 2016, the resulting dataset has `r nrow(hotel_df)` rows.   
+
+We aim to explore the following questions using our exploratory data analysis:  
+
+* Where do the guests come from?  
+(add content)
 
 
-### Exploratory Analysis
+### Exploratory Data Analysis
 
 #### Home Country of Guests
-
-(waiting for input)
+```{r choropleth maps, echo=F, message=F, warning=F}
+hotel_df %>% 
+  select(country, is_canceled) %>% 
+  filter(is_canceled == 0) %>% 
+  group_by(country) %>% 
+  summarise(
+    total_booking = n(),
+  ) %>% 
+  mutate(
+    booking_percent = round(total_booking/sum(total_booking)*100, 2),
+    text_label = str_c("Country: ", country, "\nBooking percent: ", booking_percent, "%")
+  ) %>% 
+  plot_ly(locations = ~country, z = ~booking_percent, type ="choropleth",
+          colorscale="Viridis", zmin = 0, zmax = 30,
+          text = ~text_label)
+  labs(title = "Home Country of Guests")
+```                
 
 
 #### Seasonal Fluctuation
