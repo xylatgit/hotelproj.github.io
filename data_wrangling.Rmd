@@ -190,6 +190,6 @@ plot(fit_logistic, which = 4, id.n = 5)
 
 Validation of Predicted Values
 ```{r}
-test_predicted <- predict(fit_logistic, newdata = test_df, type = "response")
+# test_predicted <- predict(fit_logistic, newdata = test_df, type = "response")
 ```
 

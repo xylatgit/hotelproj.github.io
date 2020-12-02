@@ -40,7 +40,8 @@ The dimension of the original published dataset is `r nrow(hotel_whole_df)` rows
 We aim to explore the following questions using our exploratory data analysis:  
 
 * Where do the guests come from?  
-(add content)
+* How does price vary over the year?  
+* (add content)
 
 
 ### Exploratory Data Analysis
@@ -69,14 +70,77 @@ hotel_df %>%
   group_by(country) %>% 
   summarise(count = n()) %>%
   mutate(booking_percent = round(count/sum(count)*100, 2)) %>% 
+  filter(booking_percent > 0.5) %>% 
   plot_ly(labels = ~country, values = ~booking_percent) %>% 
   add_pie(hole = 0.6) %>% 
-  layout(title = "Home Country of Guests", showlegend = F,
+  layout(title = "Home Country of Guests", showlegend = T,
          xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
          yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
 ```
 
-**Comment**:  As shown from the choropleth maps and the donut chart, most guests(39.4%) are Portuguese, with British and French guest come second and third.  
+**Comment**:  As shown from the choropleth maps and the donut chart, most guests(39.4%) are Portuguese, with British and French guest come second and third.    
+
+#### Price Fluctuation 
+```{r adr_month, message=F,echo=F}
+
+hotel_adr =
+  hotel_df%>% 
+  select(hotel, arrival_date_month,adr) %>%
+  group_by(hotel, arrival_date_month) %>%
+  filter(adr > 0) %>% 
+  summarize(
+    high_adr = mean(adr) + 0.5*sd(adr),
+    mean_adr = mean(adr),
+    low_adr = mean(adr) - 0.5*sd(adr))%>% 
+  arrange(match(arrival_date_month, month.name)) %>% 
+  mutate(arrival_date_month = factor(arrival_date_month, levels = month.name)) 
+
+fig1 = 
+  hotel_adr %>%
+  filter(hotel == "Resort Hotel") %>% 
+  plot_ly(x = ~arrival_date_month, y = ~high_adr,  
+          type = 'scatter', mode = 'lines', 
+          line = list(color = 'transparent'),
+          showlegend = TRUE,  name = 'High Resort Hotel') %>%
+  
+    add_trace(y = ~low_adr, 
+          type = 'scatter', mode = 'lines', 
+          fill = 'tonexty',
+          fillcolor =  'rgba(255,215,0,0.2)',
+          line = list(color = 'transparent'), 
+          showlegend = TRUE, 
+          name = 'Low Resort Hotel' ) %>%  
+  
+    add_trace(x = ~ arrival_date_month, y = ~mean_adr, 
+          type = "scatter", 
+          mode = "lines", 
+          line = list(color='rgb(255,215,0)'))
+
+fig1 %>% 
+  add_trace(data = hotel_adr %>% filter(hotel == "City Hotel"),
+            x = ~arrival_date_month, y = ~high_adr,  
+          type = 'scatter', mode = 'lines', 
+          line = list(color = 'transparent'),
+          showlegend = TRUE,  name = 'High City Hotel') %>%
+  
+    add_trace(y = ~low_adr, 
+          type = 'scatter', mode = 'lines', 
+          fill = 'tonexty',
+          fillcolor =  'rgba(128,0,129,0.2)',
+          line = list(color = 'transparent'), 
+          showlegend = TRUE, 
+          name = 'Low Resort Hotel' ) %>%  
+  
+    add_trace(x = ~ arrival_date_month, y = ~mean_adr, 
+          type = "scatter", 
+          mode = "lines", 
+          line = list(color='rgb(128,0,128)')) %>% 
+  
+  layout(title = "Monthly Fluctuation on Average Daily Rate (ADR)", 
+         xaxis = list(title = "Month"), 
+         yaxis = list(title = "Average Daily Rate"))
+```
+The average daily rate (ADR) for the city hotel increases slightly between May and September, which make sense considering the booking demand pattern for city hotel.The ADR for the resort hotel has more variation throughout the year, and its ADR reaches its peak during Summer.
 
 #### Seasonal Fluctuation
 ```{r month_lineplot, echo=F, message=F, warning=F}
@@ -96,24 +160,7 @@ ggplotly(month_line)
 ```
 City hotel has the most booking in Spring (May-June) and Autumn (October); the number of bookings for the resort hotel has less fluctuation compared to that of the city hotel. The booking demand goes down slightly from June to September for the resort hotel. 
 
-```{r adr_month, message=F,echo=F}
-adr_month<-hotel_df %>% 
-  select(hotel,arrival_date_month,adr) %>%
-  group_by(hotel, arrival_date_month) %>%
-  summarize(
-    adr=mean(adr)
-  ) %>% 
-  ggplot(aes(x=factor(arrival_date_month,level=month.name), y = adr, group = hotel, color = hotel))+
-  geom_point()+
-  geom_line()+
-  labs(title = "Monthly Fluctuation on Average Daily Rate (ADR)", x = "Month", y = "Average Daily Rate")+
-  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
 
-ggplotly(adr_month)
-
-
-```
-The average daily rate (ADR) for the city hotel increases slightly between May and September, which make sense considering the booking demand pattern for city hotel.The ADR for the resort hotel has more variation throughout the year, and its ADR reaches its peak during Summer.
 
 #### Room Type Investigation
 ```{r roomType, echo=F,message=F,warning=F}
