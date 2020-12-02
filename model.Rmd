@@ -50,11 +50,11 @@ hotel_ml =
     ),
     false_room_assignment = as.factor(false_room_assignment),
     is_canceled = as.factor(is_canceled)) %>% 
-    select(lead_time,total_of_special_requests,agent,previous_cancellations,adr,booking_changes,arrival_date_month,arrival_season,meal,market_segment,distribution_channel,reserved_room_type,deposit_type,customer_type) %>% 
+    select(lead_time,total_of_special_requests,agent,previous_cancellations,adr,booking_changes,arrival_date_month,arrival_season,meal,market_segment,distribution_channel,reserved_room_type,deposit_type,customer_type,is_canceled) %>% 
   mutate_if(is.character, as.factor)
 
 ##write hotel_ml.csv
-write.csv(hotel_ml,"./data/hotel_ml.csv")
+write.csv(hotel_ml,"./data/hotel_ml.csv",row.names = F)
 
 ```
 
