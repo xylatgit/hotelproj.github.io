@@ -5,26 +5,113 @@ date: "12/1/2020"
 output: html_document
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+```{r setup,message=F,echo=F,warning=F}
+library(reshape2)
+library(randomForest)
+library(dplyr)
+library(ggplot2)
+library(caret)
 ```
 
-## R Markdown
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+```{r data,message=F,echo=F,warning=F}
+hotel_ml <- read.csv("./data/hotel_ml.csv")
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+hotel_ml %>% is.na %>% melt %>% 
+  ggplot(data = .,aes(x = Var2, y = Var1)) + geom_tile(aes(fill = value,width=0.95)) +
+  scale_fill_manual(values = c("lightblue","white")) + theme_minimal(14) + 
+  theme(axis.text.x  = element_text(angle=45, vjust=.75), 
+        legend.position='None',
+        legend.direction='horizontal',
+        panel.grid.major=element_blank(),
+        axis.title.x=element_blank(),
+        axis.title.y=element_blank(),
+        plot.margin=unit(c(.1,.1,.1,.1), "cm")) + 
+  labs(title = 'Missing values in each column', subtitle='represented as white bars')
 
-```{r cars}
-summary(cars)
+```
+The majority of missing value in the dataset comes from variable _agent_. The number of missing value in the column is `r sum(is.na(hotel_ml$agent))`, which is `r sum(is.na(hotel_ml$agent))/nrow(hotel_ml)*100`% of the total observations.
+
+```{r agent distribution}
+hotel_ml %>% 
+  ggplot(aes(x=agent))+geom_histogram(aes(y = ..density..),binwidth = 10,color = "grey30", fill = "white")+
+  geom_density(alpha = .2, fill = "red")
 ```
 
-## Including Plots
 
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
+The distribution of _agent_ is pretty skewed and non-normal. Either remove all or replace with median.
+I would first try with their median.
+```{r agent, warning = F}
+hotel_ml<-hotel_ml %>%
+  mutate_at(
+    vars(starts_with("agent")), funs(ifelse(is.na(.),median(., na.rm = TRUE),.))
+  ) 
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+```{r randomForest}
+#Data Partition
+set.seed(123)
+ind <- sample(2, nrow(hotel_ml), replace = T, prob = c(0.8, 0.2))
+hotel_ml$is_canceled <- as.factor(hotel_ml$is_canceled)
+train <- hotel_ml[ind==1,]
+test <- hotel_ml[ind==2,]
+
+#Random Forest
+set.seed(222)
+rf <- randomForest(is_canceled ~ ., data = train, importance = T)
+print(rf)
+attributes(rf)
+
+#confusion matrix
+rf$confusion
+
+
+#Predication & Confusion Matrix - train data
+p1 <- predict(rf, train)
+confusionMatrix(p1,train$is_canceled)
+
+
+#Predication & Confusion Matrix - test data
+p2 <- predict(rf, test)
+confusionMatrix(p2,test$is_canceled)
+
+
+#Error rate of Random Forest
+plot(rf)
+
+#Tune mtry
+t <-tuneRF(train[,-15], train[,15],
+       stepFactor = 0.5,
+       plot = TRUE,
+       ntreeTry = 250,
+       trace = TRUE,
+       improve = 0.05)
+
+rf_tuned <- randomForest(is_canceled ~ ., data = train,
+                         importance = TRUE)
+print(rf_tuned)
+
+
+p3 <- predict(rf_tuned,train)
+confusionMatrix(p3,train$is_canceled)
+
+confusionMatrix(predict(rf_tuned,test), test$is_canceled) #accuracy = 0.8585
+
+
+#Variable Importance
+varImpPlot(rf_tuned, main = "Variable Importance")
+##importance(rf)
+varUsed(rf_tuned)
+
+#Partial Dependence Plot
+partialPlot(rf_tuned, train, lead_time, "1")
+
+                         
+```
+
+
+
+
+
+
