@@ -60,10 +60,23 @@ hotel_df %>%
   ) %>% 
   plot_ly(locations = ~country, z = ~booking_percent, type ="choropleth",
           colorscale="Viridis", zmin = 0, zmax = 30,
-          text = ~text_label)
-  labs(title = "Home Country of Guests")
+          text = ~text_label)  %>% 
+  layout(title = "Home Country of Guests")
 ```                
 
+```{r donut chart, echo=F, message=F, warning=F}
+hotel_df %>% 
+  group_by(country) %>% 
+  summarise(count = n()) %>%
+  mutate(booking_percent = round(count/sum(count)*100, 2)) %>% 
+  plot_ly(labels = ~country, values = ~booking_percent) %>% 
+  add_pie(hole = 0.6) %>% 
+  layout(title = "Home Country of Guests", showlegend = F,
+         xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+         yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
+```
+
+**Comment**:  As shown from the choropleth maps and the donut chart, most guests(39.4%) are Portuguese, with British and French guest come second and third.  
 
 #### Seasonal Fluctuation
 ```{r month_lineplot, echo=F, message=F, warning=F}
