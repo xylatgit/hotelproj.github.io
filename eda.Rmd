@@ -42,8 +42,8 @@ The dimension of the original published dataset is `r nrow(hotel_whole_df)` rows
 (waiting for input)
 
 
-#### Average Daily Rate Difference
-```{r month_lineplot, echo=F}
+#### Seasonal Fluctuation
+```{r month_lineplot, echo=F, message=F, warning=F}
 month_line<-hotel_df %>%
   select(hotel,arrival_date_month) %>%
   group_by(hotel, arrival_date_month) %>%
@@ -51,6 +51,7 @@ month_line<-hotel_df %>%
     count = n()
   ) %>%
   ggplot(aes(x=factor(arrival_date_month,level=month.name),y=count,group = hotel,color = hotel))+
+  geom_point()+
   geom_line() +
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))+
   labs(title = "Hotel Booking per Month", x = "Month", y = "Number of Bookings")
@@ -58,6 +59,49 @@ month_line<-hotel_df %>%
 ggplotly(month_line)
 ```
 City hotel has the most booking in Spring (May-June) and Autumn (October); the number of bookings for the resort hotel has less fluctuation compared to that of the city hotel. The booking demand goes down slightly from June to September for the resort hotel. 
+
+```{r adr_month, message=F,echo=F}
+adr_month<-hotel_df %>% 
+  select(hotel,arrival_date_month,adr) %>%
+  group_by(hotel, arrival_date_month) %>%
+  summarize(
+    adr=mean(adr)
+  ) %>% 
+  ggplot(aes(x=factor(arrival_date_month,level=month.name), y = adr, group = hotel, color = hotel))+
+  geom_point()+
+  geom_line()+
+  labs(title = "Monthly Fluctuation on Average Daily Rate (ADR)", x = "Month", y = "Average Daily Rate")+
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
+
+ggplotly(adr_month)
+
+
+```
+The average daily rate (ADR) for the city hotel increases slightly between May and September, which make sense considering the booking demand pattern for city hotel.The ADR for the resort hotel has more variation throughout the year, and its ADR reaches its peak during Summer.
+
+#### Room Type Investigation
+```{r roomType, echo=F,message=F,warning=F}
+rmType_adr_box<-hotel_df %>%
+  select(hotel,assigned_room_type,adr) %>%
+  ggplot(aes(x = assigned_room_type, y = adr, fill = hotel))+
+  geom_boxplot(position = position_dodge(1,preserve = "single"))+
+  ylim(-10,350)+
+  labs(x="Assigned Room Type",y = "ADR",title = "Assigned Room Type vs. ADR - Box")
+
+
+
+rmType_adr_line<-hotel_df %>%
+  select(hotel,assigned_room_type,adr) %>%
+  group_by(hotel,assigned_room_type) %>%
+  summarize(adr=mean(adr)) %>%
+  ggplot(aes(x = assigned_room_type, y = adr,color = hotel,group=hotel))+
+  geom_line()+
+  ylim(-10,250)+
+  labs(x = "Assigned Room Type", y = "ADR", title = "Assigned Room Type vs. ADR - Line")
+
+library(patchwork)
+rmType_adr_box/rmType_adr_line
+```
 
 
 
