@@ -149,7 +149,8 @@ hotel_ml =
   read_csv("./data/hotel_ml.csv") %>% 
   mutate(
     is_canceled = as.factor(is_canceled)
-  )
+  ) %>% 
+  mutate_if(is.character, as.factor)
 ```
 
 train/test split:
@@ -173,5 +174,22 @@ fit_logistic %>%
   mutate(OR = exp(estimate)) %>%
   select(term, log_OR = estimate, OR, p.value) %>% 
   knitr::kable(digits = 3)
+```
+
+variable importance:
+```{r}
+caret::varImp(fit_logistic) %>% 
+  arrange(desc(Overall)) %>% 
+  knitr::kable(digits = 3)
+```
+model evaluation & diagnoistics 
+possible outliers:
+```{r}
+plot(fit_logistic, which = 4, id.n = 5)
+```
+
+Validation of Predicted Values
+```{r}
+test_predicted <- predict(fit_logistic, newdata = test_df, type = "response")
 ```
 
