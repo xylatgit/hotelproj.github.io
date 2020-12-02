@@ -36,6 +36,7 @@ hotel_df = read.csv("./data/hotel_bookings.csv",na = c("", "NA", "NULL"))
 
 hotel_ml = 
   hotel_df %>% 
+  filter(arrival_date_year==2016) %>%
   mutate(
     arrival_season = case_when(
       arrival_date_month %in% c("October","November","December") ~ "Fall",
@@ -49,15 +50,14 @@ hotel_ml =
     ),
     false_room_assignment = as.factor(false_room_assignment),
     is_canceled = as.factor(is_canceled)) %>% 
-    select(-c(arrival_date_year, arrival_date_week_number, arrival_date_day_of_month,
-              arrival_date_month, reservation_status_date, reservation_status, 
-              agent, company, country, reserved_room_type, assigned_room_type)) %>% 
+    select(lead_time,total_of_special_requests,agent,previous_cancellations,adr,booking_changes,arrival_date_month,arrival_season,meal,market_segment,distribution_channel,reserved_room_type,deposit_type,customer_type) %>% 
   mutate_if(is.character, as.factor)
+
+##write hotel_ml.csv
+write.csv(hotel_ml,"./data/hotel_ml.csv")
 
 ```
 
-#### Overview   
-We are using the [**Hotel Booking Demand Dataset**](https://www.sciencedirect.com/science/article/pii/S2352340918315191) which contains `r nrow(hotel_df)` observations and `r ncol(hotel_df)` variables. Our primary goal is to use this dataset to predict the likelihood of booking cancellation. 
 
 
 
