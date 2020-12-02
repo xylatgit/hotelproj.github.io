@@ -9,5 +9,55 @@ output:
 _image source: google_
 
 
+### Overview
+The data [**Hotel Booking Demand Dataset**](https://www.sciencedirect.com/science/article/pii/S2352340918315191) were collected from two hotels (Resort hotel and City hotel) located in Portugal. It contains hotel booking information between the 1st of July of 2015 and the 31st of August 2017. For a speedy performance of our predictive model, we only select data from 2016 for training.
+
+```{r setup, echo=FALSE, message=F}
+library(dplyr)
+library(tidyverse)
+library(plotly)
+library(ggplot2)
+
+theme_set(theme_minimal() + theme(legend.position = "bottom"))
+options(
+  ggplot2.continuous.colour = "viridis",
+  ggplot2.continuous.fill = "viridis"
+)
+scale_colour_discrete = scale_color_viridis_d
+scale_fill_discrete = scale_fill_viridis_d
+```
+
+```{r data,echo=FALSE, message=F}
+hotel_whole_df <- read.csv("./data/hotel_bookings.csv",na = c("", "NA", "NULL")) 
+hotel_df <- hotel_whole_df %>% filter(arrival_date_year==2016)
+```
+
+The dimension of the original published dataset is `r nrow(hotel_whole_df)` rows by `r ncol(hotel_whole_df)` columns. After filtering instances from year 2016, the resulting dataset has `r nrow(hotel_df)` rows.
+
+
+### Exploratory Analysis
+
+#### Home Country of Guests
+
+(waiting for input)
+
+
+#### Average Daily Rate Difference
+```{r month_lineplot, echo=F}
+month_line<-hotel_df %>%
+  select(hotel,arrival_date_month) %>%
+  group_by(hotel, arrival_date_month) %>%
+  summarize(
+    count = n()
+  ) %>%
+  ggplot(aes(x=factor(arrival_date_month,level=month.name),y=count,group = hotel,color = hotel))+
+  geom_line() +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))+
+  labs(title = "Hotel Booking per Month", x = "Month", y = "Number of Bookings")
+  
+ggplotly(month_line)
+```
+City hotel has the most booking in Spring (May-June) and Autumn (October); the number of bookings for the resort hotel has less fluctuation compared to that of the city hotel. The booking demand goes down slightly from June to September for the resort hotel. 
+
 
 

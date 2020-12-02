@@ -13,7 +13,6 @@
 
 <title>Exploratory Analysis</title>
 
-<script src="site_libs/header-attrs-2.3/header-attrs.js"></script>
 <script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="site_libs/bootstrap-3.3.5/css/journal.min.css" rel="stylesheet" />
@@ -23,6 +22,13 @@
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
 <link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
 <script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<script src="site_libs/htmlwidgets-1.5.1/htmlwidgets.js"></script>
+<script src="site_libs/plotly-binding-4.9.2.1/plotly.js"></script>
+<script src="site_libs/typedarray-0.1/typedarray.min.js"></script>
+<link href="site_libs/crosstalk-1.1.0.1/css/crosstalk.css" rel="stylesheet" />
+<script src="site_libs/crosstalk-1.1.0.1/js/crosstalk.min.js"></script>
+<link href="site_libs/plotly-htmlwidgets-css-1.52.2/plotly-htmlwidgets.css" rel="stylesheet" />
+<script src="site_libs/plotly-main-1.52.2/plotly-latest.min.js"></script>
 <link href="site_libs/font-awesome-5.1.0/css/all.css" rel="stylesheet" />
 <link href="site_libs/font-awesome-5.1.0/css/v4-shims.css" rel="stylesheet" />
 
@@ -318,6 +324,29 @@ $(document).ready(function () {
 
 <p><img src="images/eda_1.jpg"><br />
 <em>image source: google</em></p>
+<div id="overview" class="section level3">
+<h3>Overview</h3>
+<p>The data <a href="https://www.sciencedirect.com/science/article/pii/S2352340918315191"><strong>Hotel Booking Demand Dataset</strong></a> were collected from two hotels (Resort hotel and City hotel) located in Portugal. It contains hotel booking information between the 1st of July of 2015 and the 31st of August 2017. For a speedy performance of our predictive model, we only select data from 2016 for training.</p>
+<p>The dimension of the original published dataset is 119390 rows by 32 columns. After filtering instances from year 2016, the resulting dataset has 56707 rows.</p>
+</div>
+<div id="exploratory-analysis" class="section level3">
+<h3>Exploratory Analysis</h3>
+<div id="home-country-of-guests" class="section level4">
+<h4>Home Country of Guests</h4>
+<p>(waiting for input)</p>
+</div>
+<div id="average-daily-rate-difference" class="section level4">
+<h4>Average Daily Rate Difference</h4>
+<pre><code>## `summarise()` regrouping output by &#39;hotel&#39; (override with `.groups` argument)</code></pre>
+<pre><code>## Warning: `group_by_()` is deprecated as of dplyr 0.7.0.
+## Please use `group_by()` instead.
+## See vignette(&#39;programming&#39;) for more help
+## This warning is displayed once every 8 hours.
+## Call `lifecycle::last_warnings()` to see where this warning was generated.</code></pre>
+<p><div id="htmlwidget-32551fb74682d64687fb" style="width:672px;height:480px;" class="plotly html-widget"></div>
+<script type="application/json" data-for="htmlwidget-32551fb74682d64687fb">{"x":{"data":[{"x":[1,2,3,4,5,6,7,8,9,10,11,12],"y":[1364,2371,3046,3561,3676,3923,3131,3378,3871,4219,3122,2478],"text":["factor(arrival_date_month, level = month.name): January<br />count: 1364<br />hotel: City Hotel<br />hotel: City Hotel","factor(arrival_date_month, level = month.name): February<br />count: 2371<br />hotel: City Hotel<br />hotel: City Hotel","factor(arrival_date_month, level = month.name): March<br />count: 3046<br />hotel: City Hotel<br />hotel: City Hotel","factor(arrival_date_month, level = month.name): April<br />count: 3561<br />hotel: City Hotel<br />hotel: City Hotel","factor(arrival_date_month, level = month.name): May<br />count: 3676<br />hotel: City Hotel<br />hotel: City Hotel","factor(arrival_date_month, level = month.name): June<br />count: 3923<br />hotel: City Hotel<br />hotel: City Hotel","factor(arrival_date_month, level = month.name): July<br />count: 3131<br />hotel: City Hotel<br />hotel: City Hotel","factor(arrival_date_month, level = month.name): August<br />count: 3378<br />hotel: City Hotel<br />hotel: City Hotel","factor(arrival_date_month, level = month.name): September<br />count: 3871<br />hotel: City Hotel<br />hotel: City Hotel","factor(arrival_date_month, level = month.name): October<br />count: 4219<br />hotel: City Hotel<br />hotel: City Hotel","factor(arrival_date_month, level = month.name): November<br />count: 3122<br />hotel: City Hotel<br />hotel: City Hotel","factor(arrival_date_month, level = month.name): December<br />count: 2478<br />hotel: City Hotel<br />hotel: City Hotel"],"type":"scatter","mode":"lines","line":{"width":1.88976377952756,"color":"rgba(68,1,84,1)","dash":"solid"},"hoveron":"points","name":"City Hotel","legendgroup":"City Hotel","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[1,2,3,4,5,6,7,8,9,10,11,12],"y":[884,1520,1778,1867,1802,1369,1441,1685,1523,1984,1332,1382],"text":["factor(arrival_date_month, level = month.name): January<br />count:  884<br />hotel: Resort Hotel<br />hotel: Resort Hotel","factor(arrival_date_month, level = month.name): February<br />count: 1520<br />hotel: Resort Hotel<br />hotel: Resort Hotel","factor(arrival_date_month, level = month.name): March<br />count: 1778<br />hotel: Resort Hotel<br />hotel: Resort Hotel","factor(arrival_date_month, level = month.name): April<br />count: 1867<br />hotel: Resort Hotel<br />hotel: Resort Hotel","factor(arrival_date_month, level = month.name): May<br />count: 1802<br />hotel: Resort Hotel<br />hotel: Resort Hotel","factor(arrival_date_month, level = month.name): June<br />count: 1369<br />hotel: Resort Hotel<br />hotel: Resort Hotel","factor(arrival_date_month, level = month.name): July<br />count: 1441<br />hotel: Resort Hotel<br />hotel: Resort Hotel","factor(arrival_date_month, level = month.name): August<br />count: 1685<br />hotel: Resort Hotel<br />hotel: Resort Hotel","factor(arrival_date_month, level = month.name): September<br />count: 1523<br />hotel: Resort Hotel<br />hotel: Resort Hotel","factor(arrival_date_month, level = month.name): October<br />count: 1984<br />hotel: Resort Hotel<br />hotel: Resort Hotel","factor(arrival_date_month, level = month.name): November<br />count: 1332<br />hotel: Resort Hotel<br />hotel: Resort Hotel","factor(arrival_date_month, level = month.name): December<br />count: 1382<br />hotel: Resort Hotel<br />hotel: Resort Hotel"],"type":"scatter","mode":"lines","line":{"width":1.88976377952756,"color":"rgba(253,231,37,1)","dash":"solid"},"hoveron":"points","name":"Resort Hotel","legendgroup":"Resort Hotel","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null}],"layout":{"margin":{"t":43.7625570776256,"r":7.30593607305936,"b":56.8006103688684,"l":48.9497716894977},"font":{"color":"rgba(0,0,0,1)","family":"","size":14.6118721461187},"title":{"text":"Hotel Booking per Month","font":{"color":"rgba(0,0,0,1)","family":"","size":17.5342465753425},"x":0,"xref":"paper"},"xaxis":{"domain":[0,1],"automargin":true,"type":"linear","autorange":false,"range":[0.4,12.6],"tickmode":"array","ticktext":["January","February","March","April","May","June","July","August","September","October","November","December"],"tickvals":[1,2,3,4,5,6,7,8,9,10,11,12],"categoryorder":"array","categoryarray":["January","February","March","April","May","June","July","August","September","October","November","December"],"nticks":null,"ticks":"","tickcolor":null,"ticklen":3.65296803652968,"tickwidth":0,"showticklabels":true,"tickfont":{"color":"rgba(77,77,77,1)","family":"","size":11.689497716895},"tickangle":-45,"showline":false,"linecolor":null,"linewidth":0,"showgrid":true,"gridcolor":"rgba(235,235,235,1)","gridwidth":0.66417600664176,"zeroline":false,"anchor":"y","title":{"text":"Month","font":{"color":"rgba(0,0,0,1)","family":"","size":14.6118721461187}},"hoverformat":".2f"},"yaxis":{"domain":[0,1],"automargin":true,"type":"linear","autorange":false,"range":[717.25,4385.75],"tickmode":"array","ticktext":["1000","2000","3000","4000"],"tickvals":[1000,2000,3000,4000],"categoryorder":"array","categoryarray":["1000","2000","3000","4000"],"nticks":null,"ticks":"","tickcolor":null,"ticklen":3.65296803652968,"tickwidth":0,"showticklabels":true,"tickfont":{"color":"rgba(77,77,77,1)","family":"","size":11.689497716895},"tickangle":-0,"showline":false,"linecolor":null,"linewidth":0,"showgrid":true,"gridcolor":"rgba(235,235,235,1)","gridwidth":0.66417600664176,"zeroline":false,"anchor":"x","title":{"text":"Number of Bookings","font":{"color":"rgba(0,0,0,1)","family":"","size":14.6118721461187}},"hoverformat":".2f"},"shapes":[{"type":"rect","fillcolor":null,"line":{"color":null,"width":0,"linetype":[]},"yref":"paper","xref":"paper","x0":0,"x1":1,"y0":0,"y1":1}],"showlegend":true,"legend":{"bgcolor":null,"bordercolor":null,"borderwidth":0,"font":{"color":"rgba(0,0,0,1)","family":"","size":11.689497716895},"y":0.913385826771654},"annotations":[{"text":"hotel","x":1.02,"y":1,"showarrow":false,"ax":0,"ay":0,"font":{"color":"rgba(0,0,0,1)","family":"","size":14.6118721461187},"xref":"paper","yref":"paper","textangle":-0,"xanchor":"left","yanchor":"bottom","legendTitle":true}],"hovermode":"closest","barmode":"relative"},"config":{"doubleClick":"reset","showSendToCloud":false},"source":"A","attrs":{"2595506f1ef0":{"x":{},"y":{},"colour":{},"type":"scatter"}},"cur_data":"2595506f1ef0","visdat":{"2595506f1ef0":["function (y) ","x"]},"highlight":{"on":"plotly_click","persistent":false,"dynamic":false,"selectize":false,"opacityDim":0.2,"selected":{"opacity":1},"debounce":0},"shinyEvents":["plotly_hover","plotly_click","plotly_selected","plotly_relayout","plotly_brushed","plotly_brushing","plotly_clickannotation","plotly_doubleclick","plotly_deselect","plotly_afterplot","plotly_sunburstclick"],"base_url":"https://plot.ly"},"evals":[],"jsHooks":[]}</script> City hotel has the most booking in Spring (May-June) and Autumn (October); the number of bookings for the resort hotel has less fluctuation compared to that of the city hotel. The booking demand goes down slightly from June to September for the resort hotel.</p>
+</div>
+</div>
 
 
 
