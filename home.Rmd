@@ -5,7 +5,7 @@ output:
   
 ---
 
-_**Yihan Feng, Xiangyi Liu, Bin Yang, Yueqi Zhong**_
+_**Yihan Feng, Xiangyi Liu, Bin Yang, Zhongqi Yue**_
 
 <img src="./images/landingpage_cover.jpg">
 _image source: google_
