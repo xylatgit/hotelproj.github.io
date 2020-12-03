@@ -41,7 +41,7 @@ We aim to explore the following questions using our exploratory data analysis:
 
 * Where do the guests come from?  
 * How does price vary over the year?  
-* (add content)
+* What are the potential factors which could influence the cancellation of both hotels?
 
 
 ### Exploratory Data Analysis
@@ -186,5 +186,209 @@ library(patchwork)
 rmType_adr_box/rmType_adr_line
 ```
 
+#### Potential influence factors for cancellation
 
+##### Assigned room type
 
+```{r, echo=F, message=F, warning=F}
+hotel_df %>% 
+  select(hotel, is_canceled, assigned_room_type) %>% 
+  group_by(hotel, assigned_room_type) %>% 
+  summarize(
+    n_obs = n()
+    ) %>%
+  mutate(assigned_room_type = fct_reorder(assigned_room_type, n_obs)) %>% 
+  plot_ly(
+    x = ~assigned_room_type, y = ~n_obs,
+    type = "bar", color = ~hotel, colors = "viridis"
+  ) %>%
+  layout(title = "The distribution of assigned room type for two hotels",
+         xaxis = list(title = "Assigned room type"),
+         yaxis = list(title = "The number of assigned rooms"))
+  
+prop_df = 
+  hotel_df %>% 
+  select(hotel, is_canceled, assigned_room_type) %>% 
+  group_by(hotel, assigned_room_type) %>% 
+  summarize(
+    guest_total = n(),
+    guest_canceled = sum(is_canceled == "1")
+  )
+
+result_df = 
+  prop_df %>% 
+  mutate(
+    prop_tests = map2(.x = guest_canceled, .y = guest_total, ~prop.test(x = .x, n = .y)),
+    tidy_tests = map(.x = prop_tests, ~broom::tidy(.x))
+  ) %>% 
+  select(-prop_tests) %>% 
+  unnest(tidy_tests) %>% 
+  select(hotel, assigned_room_type, estimate, conf.low, conf.high)
+
+  result_df %>% 
+  mutate(assigned_room_type = fct_reorder(assigned_room_type, estimate)) %>% 
+  plot_ly(
+    x = ~assigned_room_type, y = ~estimate,
+    type = "bar", color = ~hotel, colors = "viridis"
+  ) %>%
+  layout(title = "The proportion of cancellation with assigned room type",
+         xaxis = list(title = "Assigned room type")
+  )
+```
+
+Based on the proportion plot, we found that the cancellation proportion is highest among guests who were assigned room type P for both hotels. However, from the first distribution of assigned room type plot, we know that the number of assigned P type room is extremely low for both hotel, so we could ignore this room type at this point. Expect for room type P, we found that the cancellation proportion is distinctly high among guests who were assigned room type A, G, H with comparable sizes for Resort Hotel. As for City hotel, the cancellation proportion is found to be highest among guests who were assigned room type A with comparable size. Since this data set also contains another variable called "reserved room type" which is chosen by guests themselves. Therefore, we might infer that the room types mentioned before would not meet the expectations and needs of guests compared to their originally reserved room type so that make them cancel the order.
+
+#### Distribution Channel
+
+```{r, echo=F, message=F, warning=F}
+
+hotel_df %>% 
+  select(hotel, is_canceled, distribution_channel) %>% 
+  group_by(hotel, distribution_channel) %>% 
+  summarize(
+    n_obs = n()
+  ) %>% 
+  mutate(distribution_channel = fct_reorder(distribution_channel, n_obs)) %>%
+  plot_ly(
+    x = ~distribution_channel, y = ~n_obs,
+    type = "bar", color = ~hotel, colors = "viridis"
+  ) %>%
+  layout(title = "The distribution of distribution channel for two hotels",
+         xaxis = list(title = "Distribution Channel"),
+         yaxis = list(title = "The number of choosen channels"))
+
+channel_prop_df = 
+  hotel_df %>% 
+  select(hotel, is_canceled, distribution_channel) %>% 
+  group_by(hotel, distribution_channel) %>% 
+  summarize(
+    guest_total = n(),
+    guest_canceled = sum(is_canceled == "1")
+  )
+
+channel_result_df = 
+  channel_prop_df %>% 
+  mutate(
+    prop_tests = map2(.x = guest_canceled, .y = guest_total, ~prop.test(x = .x, n = .y)),
+    tidy_tests = map(.x = prop_tests, ~broom::tidy(.x))
+  ) %>% 
+  select(-prop_tests) %>% 
+  unnest(tidy_tests) %>% 
+  select(hotel, distribution_channel, estimate, conf.low, conf.high)
+
+channel_result_df %>% 
+  mutate(distribution_channel = fct_reorder(distribution_channel, estimate)) %>% 
+  plot_ly(
+    x = ~distribution_channel, y = ~estimate,
+    type = "bar", color = ~hotel, colors = "viridis"
+  ) %>%
+  layout(title = "The proportion of cancellation with distribution channels",
+         xaxis = list(title = "Distribution Channel")
+  )
+
+```
+
+Based on the proportion plot, we found that the cancellation proportion is the highest among guest who booked the room through the TA/TO channel (“TA” means “Travel Agents” and “TO” means “Tour Operators”) for both hotels. Therefore, we could infer that this kind of channels may exists some problems such as information asymmetry with the hotel website, which could mislead guests when they make the decision. But the actual condition of the hotel might not meet the expectations or needs of guests so that they cancel the order.  
+
+#### Meal type
+
+```{r, echo=F, message=F, warning=F}
+hotel_df %>% 
+  select(hotel, is_canceled, meal) %>% 
+  group_by(hotel, meal) %>% 
+  summarize(
+    n_obs = n()
+  ) %>% 
+  mutate(meal = fct_reorder(meal, n_obs)) %>%
+  plot_ly(
+    x = ~meal, y = ~n_obs,
+    type = "bar", color = ~hotel, colors = "viridis"
+  ) %>%
+  layout(title = "The distribution of meal type for two hotels",
+         xaxis = list(title = "Meal Type"),
+         yaxis = list(title = "The number of booked meal type"))
+
+meal_prop_df = 
+  hotel_df %>% 
+  select(hotel, is_canceled, meal) %>% 
+  group_by(hotel, meal) %>% 
+  summarize(
+    guest_total = n(),
+    guest_canceled = sum(is_canceled == "1")
+  )
+
+meal_result_df = 
+  meal_prop_df %>% 
+  mutate(
+    prop_tests = map2(.x = guest_canceled, .y = guest_total, ~prop.test(x = .x, n = .y)),
+    tidy_tests = map(.x = prop_tests, ~broom::tidy(.x))
+  ) %>% 
+  select(-prop_tests) %>% 
+  unnest(tidy_tests) %>% 
+  select(hotel, meal, estimate, conf.low, conf.high)
+
+meal_result_df %>% 
+  mutate(meal = fct_reorder(meal, estimate)) %>% 
+  plot_ly(
+    x = ~meal, y = ~estimate,
+    type = "bar", color = ~hotel, colors = "viridis"
+  ) %>%
+  layout(title = "The proportion of cancellation with meal type",
+         xaxis = list(title = "Meal Type")
+  )
+
+```
+
+Based on the proportion plot, we found that for Resort hotel, the cancellation proportion is highest among guests who booked FB meal with comparable size; for City hotel, the cancellation proportion is highest among guests who booked BB meal. Therefore, we could infer that these two meal types might not meet the expectations and needs of guests, which leads them to cancel the order.
+
+#### The repeated guest effect
+
+```{r, echo=F, message=F, warning=F}
+hotel_df %>% 
+  select(hotel, is_canceled, is_repeated_guest) %>% 
+  group_by(hotel, is_repeated_guest) %>% 
+  summarize(
+    n_obs = n()
+  ) %>% 
+  mutate(
+    is_repeated_guest = as.factor(is_repeated_guest),
+    is_repeated_guest = fct_reorder(is_repeated_guest, n_obs)
+    ) %>%
+  plot_ly(
+    x = ~is_repeated_guest, y = ~n_obs,
+    type = "bar", color = ~hotel, colors = "viridis"
+  ) %>%
+  layout(title = "The distribution of repeated guests for two hotels",
+         xaxis = list(title = "Repeated Guest"),
+         yaxis = list(title = "The number of orders"))
+
+repeated_prop_df = 
+  hotel_df %>% 
+  select(hotel, is_canceled, is_repeated_guest) %>% 
+  group_by(hotel, is_repeated_guest) %>% 
+  summarize(
+    guest_total = n(),
+    guest_canceled = sum(is_canceled == "1")
+  )
+
+repeated_result_df = 
+  repeated_prop_df %>% 
+  mutate(
+    prop_tests = map2(.x = guest_canceled, .y = guest_total, ~prop.test(x = .x, n = .y)),
+    tidy_tests = map(.x = prop_tests, ~broom::tidy(.x))
+  ) %>% 
+  select(-prop_tests) %>% 
+  unnest(tidy_tests) %>% 
+  select(hotel, is_repeated_guest, estimate, conf.low, conf.high)
+
+repeated_result_df %>% 
+  plot_ly(
+    x = ~is_repeated_guest, y = ~estimate,
+    type = "bar", color = ~hotel, colors = "viridis"
+  ) %>%
+  layout(title = "The proportion of cancellation with repeated guest",
+         xaxis = list(title = "Repeated Guest")
+  )
+```
+
+Based on the proportion plot, we found that for both hotels, the cancellation proportion is significantly higher among non-repeated guests, which meets the common expectation for the repeated guest effect. 
