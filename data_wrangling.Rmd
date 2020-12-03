@@ -10,6 +10,7 @@ library(tidyverse)
 library(tidymodels)
 library(plotly)
 library(viridis)
+library(modelr)
 
 knitr::opts_chunk$set(
   fig.width = 6,
@@ -54,14 +55,14 @@ Booking and cancellation by month:   I think color is pretty awful rn......
 
 Bar plot:  
 ```{r}
-hotel_df %>% 
-  select(arrival_date_month, is_canceled) %>% 
-  mutate(arrival_date_month = as.factor(arrival_date_month),
-         is_canceled = as.factor(is_canceled)) %>% 
-  count(arrival_date_month, is_canceled) %>% 
-  mutate(arrival_date_month = fct_reorder(arrival_date_month, n)) %>% 
-  plot_ly(x = ~arrival_date_month, y = ~ n, color = ~is_canceled, type ="bar", colors = "viridis")
-  
+# hotel_df %>% 
+#   select(arrival_date_month, is_canceled) %>% 
+#   mutate(arrival_date_month = as.factor(arrival_date_month),
+#          is_canceled = as.factor(is_canceled)) %>% 
+#   count(arrival_date_month, is_canceled) %>% 
+#   mutate(arrival_date_month = fct_reorder(arrival_date_month, n)) %>% 
+#   plot_ly(x = ~arrival_date_month, y = ~ n, color = ~is_canceled, type ="bar", colors = "viridis")
+#   
 ```
 
 Does the hotel charged differently for different customer type?   
@@ -70,13 +71,13 @@ need to do: modify axies, deal with outliers!
 
 boxplot:   
 ```{r}
-hotel_df %>% 
-  select(hotel, customer_type, adr) %>% 
-  mutate(hotel= as.factor(hotel), 
-         customer_type = as.factor(customer_type),
-         customer_type = fct_reorder(customer_type, adr))%>%
-  plot_ly(y = ~adr, x = ~customer_type, color = ~hotel, type ="box" , colors = "viridis") %>% 
-  layout(boxmode = "group", yaxis = list(range=c(0,800)))
+# hotel_df %>% 
+#   select(hotel, customer_type, adr) %>% 
+#   mutate(hotel= as.factor(hotel), 
+#          customer_type = as.factor(customer_type),
+#          customer_type = fct_reorder(customer_type, adr))%>%
+#   plot_ly(y = ~adr, x = ~customer_type, color = ~hotel, type ="box" , colors = "viridis") %>% 
+#   layout(boxmode = "group", yaxis = list(range=c(0,800)))
 ```
 
 Home country of guests! 
@@ -84,18 +85,18 @@ Home country of guests!
 a lot to improve... hover etc...
 choropleth maps:  
 ```{r}
-hotel_df %>% 
-  select(country, is_canceled) %>% 
-  filter(is_canceled == 0) %>% 
-  group_by(country) %>% 
-  summarise(
-    total_booking = n(),
-  ) %>% 
-  mutate(
-    booking_percent = round(total_booking/sum(total_booking)*100, 2)
-  ) %>% 
-  plot_ly(locations = ~country, z = ~booking_percent, type ="choropleth",
-          colorscale="Viridis", zmin = 0, zmax = 30)
+# hotel_df %>% 
+#   select(country, is_canceled) %>% 
+#   filter(is_canceled == 0) %>% 
+#   group_by(country) %>% 
+#   summarise(
+#     total_booking = n(),
+#   ) %>% 
+#   mutate(
+#     booking_percent = round(total_booking/sum(total_booking)*100, 2)
+#   ) %>% 
+#   plot_ly(locations = ~country, z = ~booking_percent, type ="choropleth",
+#           colorscale="Viridis", zmin = 0, zmax = 30)
 ```
 
 #### Logistic Regression :    
@@ -104,12 +105,12 @@ data preprocessing:
 
 total NAs:  
 ```{r}
-table_NA=
-  hotel_df %>% 
-  summarise_all(funs(sum(is.na(.))))
-
-t(table_NA) %>% 
-  knitr::kable()
+# table_NA=
+#   hotel_df %>% 
+#   summarise_all(funs(sum(is.na(.))))
+# 
+# t(table_NA) %>% 
+#   knitr::kable()
 ```
 
 ```{r}
@@ -136,13 +137,6 @@ t(table_NA) %>%
 #               agent, company, country, reserved_room_type, assigned_room_type)) 
 ```
 
-
-train/test split:  
-```{r}
-# set.seed(123)
-# hotel_split = initial_split(hotel_ml)
-```
-
 read in dataset:
 ```{r}
 hotel_ml = 
@@ -150,46 +144,98 @@ hotel_ml =
   mutate(
     is_canceled = as.factor(is_canceled)
   ) %>% 
-  mutate_if(is.character, as.factor)
+  mutate_if(is.character, as.factor) %>% 
+  select(-arrival_date_month) %>% 
+  drop_na()
+```
+
+```{r}
+table_NA=
+  hotel_ml %>%
+  summarise_all(funs(sum(is.na(.))))
+
+t(table_NA) %>%
+  knitr::kable()
+```
+
+We used stepwise selection and concluded that all of our existing variables have statistical significance.
+```{r}
+fullmod = glm(is_canceled ~. , data = hotel_ml, family = binomial())
+finalmod = stats::step(fullmod, direction = "both")
+```
 ```
 
 train/test split:
 ```{r}
-set.seed(123)
+set.seed(1234)
 train_df = sample_frac(hotel_ml, 0.8)
 test_df = anti_join(hotel_ml, train_df)
 ```
 
+```{r}
+logistic_fit =  
+train_df %>% 
+glm(is_canceled ~. , data = ., family = binomial())
+```
+
+
+```{r}
+# Make predictions
+probabilities <- logistic_fit%>% predict(test_df, type = "response")
+predicted.classes <- ifelse(probabilities > 0.5, "1", "0")
+# Prediction accuracy
+observed.classes <- test_df$is_canceled
+mean(predicted.classes == observed.classes, na.rm = T)
+```
+
+
+
+use cross validation
+```{r}
+# cv_df = crossv_mc(hotel_ml, 10)
+# cv = 
+# cv_df %>% 
+#   mutate(
+#     train = map(train, as_tibble),
+#     test = map(test, as_tibble),
+#     fit_logistic = map(train, ~glm(is_canceled ~. , data = .x, family = binomial()))
+#   )
+#   
+```
+
+
+
+
 fit logistic regression: 
 ```{r}
-fit_logistic = 
-  train_df %>% 
-  glm(is_canceled ~. , data = ., family = binomial())
+# fit_logistic = 
+#   train_df %>% 
+#   glm(is_canceled ~. , data = ., family = binomial())
 ```
 
 regression output:
 ```{r}
-fit_logistic %>% 
-  broom::tidy() %>% 
-  mutate(OR = exp(estimate)) %>%
-  select(term, log_OR = estimate, OR, p.value) %>% 
-  knitr::kable(digits = 3)
+# fit_logistic %>% 
+#   broom::tidy() %>% 
+#   mutate(OR = exp(estimate)) %>%
+#   select(term, log_OR = estimate, OR, p.value) %>% 
+#   knitr::kable(digits = 3)
 ```
 
 variable importance:
 ```{r}
-caret::varImp(fit_logistic) %>% 
-  arrange(desc(Overall)) %>% 
-  knitr::kable(digits = 3)
+# caret::varImp(fit_logistic) %>% 
+#   arrange(desc(Overall)) %>% 
+#   knitr::kable(digits = 3)
 ```
 model evaluation & diagnoistics 
 possible outliers:
-```{r}
-plot(fit_logistic, which = 4, id.n = 5)
-```
+
 
 Validation of Predicted Values
 ```{r}
 # test_predicted <- predict(fit_logistic, newdata = test_df, type = "response")
 ```
+
+
 
