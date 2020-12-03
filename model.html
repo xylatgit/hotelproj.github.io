@@ -413,29 +413,7 @@ div.tocify {
 <h2>Logistic Regression</h2>
 <div id="regression-output" class="section level4">
 <h4>Regression Output</h4>
-<p>We used stepwise selection and concluded that all of our existing variables have statistical significance.</p>
-<pre><code>## Start:  AIC=45393.28
-## is_canceled ~ lead_time + total_of_special_requests + agent + 
-##     previous_cancellations + adr + booking_changes + arrival_season + 
-##     meal + market_segment + distribution_channel + reserved_room_type + 
-##     deposit_type + customer_type
-## 
-##                             Df Deviance   AIC
-## &lt;none&gt;                            45323 45393
-## - agent                      1    45329 45397
-## - previous_cancellations     1    45340 45408
-## - reserved_room_type         7    45371 45427
-## - distribution_channel       3    45466 45530
-## - meal                       4    45498 45560
-## - customer_type              3    45544 45608
-## - booking_changes            1    45541 45609
-## - arrival_season             3    45659 45723
-## - adr                        1    45721 45789
-## - lead_time                  1    46488 46556
-## - market_segment             6    46718 46776
-## - total_of_special_requests  1    48908 48976
-## - deposit_type               2    49779 49845</code></pre>
-<p>We thus fitted this model to our dataset, and generated the following output:</p>
+<p>We used stepwise selection and concluded that all of our existing variables have statistical significance. We thus fitted this model to our dataset, and generated the following output for the variables with significant odds ratios:</p>
 <table>
 <caption>Logistic Regression Output</caption>
 <thead>
@@ -490,168 +468,18 @@ div.tocify {
 <td align="right">0.230</td>
 </tr>
 <tr class="even">
-<td align="left">mealSC</td>
-<td align="right">0.302</td>
-<td align="right">1.352</td>
-<td align="right">0.000</td>
-</tr>
-<tr class="odd">
-<td align="left">reserved_room_typeB</td>
-<td align="right">0.195</td>
-<td align="right">1.215</td>
-<td align="right">0.069</td>
-</tr>
-<tr class="even">
-<td align="left">market_segmentOffline TA/TO</td>
-<td align="right">0.151</td>
-<td align="right">1.163</td>
-<td align="right">0.781</td>
-</tr>
-<tr class="odd">
-<td align="left">previous_cancellations</td>
-<td align="right">0.136</td>
-<td align="right">1.145</td>
-<td align="right">0.000</td>
-</tr>
-<tr class="even">
-<td align="left">customer_typeTransient-Party</td>
-<td align="right">0.117</td>
-<td align="right">1.124</td>
-<td align="right">0.353</td>
-</tr>
-<tr class="odd">
-<td align="left">reserved_room_typeD</td>
-<td align="right">0.115</td>
-<td align="right">1.121</td>
-<td align="right">0.001</td>
-</tr>
-<tr class="even">
-<td align="left">adr</td>
-<td align="right">0.007</td>
-<td align="right">1.007</td>
-<td align="right">0.000</td>
-</tr>
-<tr class="odd">
-<td align="left">lead_time</td>
-<td align="right">0.005</td>
-<td align="right">1.005</td>
-<td align="right">0.000</td>
-</tr>
-<tr class="even">
-<td align="left">agent</td>
-<td align="right">0.000</td>
-<td align="right">1.000</td>
-<td align="right">0.030</td>
-</tr>
-<tr class="odd">
-<td align="left">reserved_room_typeE</td>
-<td align="right">-0.024</td>
-<td align="right">0.976</td>
-<td align="right">0.702</td>
-</tr>
-<tr class="even">
-<td align="left">mealUndefined</td>
-<td align="right">-0.066</td>
-<td align="right">0.936</td>
-<td align="right">0.683</td>
-</tr>
-<tr class="odd">
-<td align="left">arrival_seasonWinter</td>
-<td align="right">-0.209</td>
-<td align="right">0.811</td>
-<td align="right">0.000</td>
-</tr>
-<tr class="even">
-<td align="left">reserved_room_typeC</td>
-<td align="right">-0.217</td>
-<td align="right">0.805</td>
-<td align="right">0.264</td>
-</tr>
-<tr class="odd">
-<td align="left">reserved_room_typeF</td>
-<td align="right">-0.234</td>
-<td align="right">0.791</td>
-<td align="right">0.004</td>
-</tr>
-<tr class="even">
-<td align="left">booking_changes</td>
-<td align="right">-0.317</td>
-<td align="right">0.728</td>
-<td align="right">0.000</td>
-</tr>
-<tr class="odd">
-<td align="left">reserved_room_typeG</td>
-<td align="right">-0.433</td>
-<td align="right">0.649</td>
-<td align="right">0.000</td>
-</tr>
-<tr class="even">
-<td align="left">mealHB</td>
-<td align="right">-0.433</td>
-<td align="right">0.648</td>
-<td align="right">0.000</td>
-</tr>
-<tr class="odd">
-<td align="left">arrival_seasonSpring</td>
-<td align="right">-0.462</td>
-<td align="right">0.630</td>
-<td align="right">0.000</td>
-</tr>
-<tr class="even">
-<td align="left">reserved_room_typeH</td>
-<td align="right">-0.469</td>
-<td align="right">0.626</td>
-<td align="right">0.003</td>
-</tr>
-<tr class="odd">
-<td align="left">arrival_seasonSummer</td>
-<td align="right">-0.602</td>
-<td align="right">0.548</td>
-<td align="right">0.000</td>
-</tr>
-<tr class="even">
-<td align="left">total_of_special_requests</td>
-<td align="right">-1.021</td>
-<td align="right">0.360</td>
-<td align="right">0.000</td>
-</tr>
-<tr class="odd">
-<td align="left">customer_typeGroup</td>
-<td align="right">-1.204</td>
-<td align="right">0.300</td>
-<td align="right">0.007</td>
-</tr>
-<tr class="even">
-<td align="left">(Intercept)</td>
-<td align="right">-1.317</td>
-<td align="right">0.268</td>
-<td align="right">0.015</td>
-</tr>
-<tr class="odd">
-<td align="left">distribution_channelTA/TO</td>
-<td align="right">-1.540</td>
-<td align="right">0.214</td>
-<td align="right">0.000</td>
-</tr>
-<tr class="even">
-<td align="left">deposit_typeRefundable</td>
-<td align="right">-1.568</td>
-<td align="right">0.208</td>
-<td align="right">0.040</td>
-</tr>
-<tr class="odd">
 <td align="left">market_segmentCorporate</td>
 <td align="right">-1.645</td>
 <td align="right">0.193</td>
 <td align="right">0.004</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">distribution_channelDirect</td>
 <td align="right">-2.204</td>
 <td align="right">0.110</td>
 <td align="right">0.000</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">distribution_channelGDS</td>
 <td align="right">-2.874</td>
 <td align="right">0.056</td>
@@ -729,8 +557,27 @@ div.tocify {
 </tr>
 </tbody>
 </table>
-<p>We can see that the two models have roughly the same prediction accuracy! ## Random Forest</p>
+<p>We can see that the two models have roughly the same prediction accuracy! We also generated the ROC for comparison:<br />
+<img src="model_files/figure-html/unnamed-chunk-4-1.png" width="80%" /></p>
 </div>
+<div id="model-diagnosis" class="section level4">
+<h4>Model Diagnosis</h4>
+<pre class="r"><code>train_df =
+  broom::augment(logistic_fit_2) %&gt;% 
+  mutate(index = 1:n()) 
+
+ggplot(data = train_df, aes(index, .std.resid, color = &quot;viridis&quot;)) + 
+  geom_point(alpha = .5) +
+  geom_ref_line(h = 3) + 
+  labs(title = &quot;Residual Deviance plot&quot;)</code></pre>
+<p><img src="model_files/figure-html/unnamed-chunk-5-1.png" width="80%" /></p>
+<pre class="r"><code>plot(logistic_fit_2, which = 4, id.n = 5)</code></pre>
+<p><img src="model_files/figure-html/unnamed-chunk-5-2.png" width="80%" /></p>
+<p>We created the residual deviance plot to detect outliers. And as shown in the plot, those standardized residuals that exceed 3 represent possible outliers and may deserve closer attention. Similarly, plotting the cook’s distance also signals some potential outliers in our dataset.</p>
+</div>
+</div>
+<div id="random-forest" class="section level2">
+<h2>Random Forest</h2>
 </div>
 
 

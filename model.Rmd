@@ -75,13 +75,14 @@ hotel_ml =
 ```
 
 #### Regression Output  
-We used stepwise selection and concluded that all of our existing variables have statistical significance.
-```{r echo=FALSE, message=F}
+```{r  include=FALSE, echo=FALSE, message=F}
 fullmod = glm(is_canceled ~. , data = hotel_ml, family = binomial())
-finalmod = stats::step(fullmod, direction = "both") 
+finalmod = 
+  stats::step(fullmod, direction = "both") %>% 
+  broom::tidy() %>% 
+  knitr::kable()
 ```
-
-We thus fitted this model to our dataset, and generated the following output: 
+We used stepwise selection and concluded that all of our existing variables have statistical significance. We thus fitted this model to our dataset, and generated the following output for the variables with significant odds ratios:  
 ```{r test/train split,echo=FALSE, message=F}
 set.seed(1234)
 train_df = sample_frac(hotel_ml, 0.8)
@@ -95,6 +96,7 @@ logistic_fit %>%
   broom::tidy() %>% 
   mutate(OR = exp(estimate)) %>%
   select(term, log_OR = estimate, OR, p.value) %>% 
+  filter(OR > 1.9 | OR < 0.2) %>% 
   arrange(desc(OR)) %>% 
   knitr::kable(digits = 3, caption = "Logistic Regression Output") 
 ```
@@ -150,7 +152,43 @@ test_df %>%
                caption = "Model Accuracy",  
                col.names = c("Model1 accuracy", "Model2 accuracy"))
 ```
-We can see that the two models have roughly the same prediction accuracy! 
+We can see that the two models have roughly the same prediction accuracy! We also generated the ROC for comparison:  
+```{r echo=FALSE, message=F}
+library(ROCR)
+
+test.predicted.m1 <- predict(logistic_fit, newdata = test_df, type = "response")
+
+test.predicted.m2 <- predict(logistic_fit_2, newdata = test_df, type = "response")
+
+par(mfrow=c(1, 2))
+
+prediction(test.predicted.m1, test_df$is_canceled) %>%
+  performance(measure = "tpr", x.measure = "fpr") %>%
+  plot()
+
+prediction(test.predicted.m2, test_df$is_canceled) %>%
+  performance(measure = "tpr", x.measure = "fpr") %>%
+  plot()
+```
+
+
+#### Model Diagnosis 
+```{r}
+train_df =
+  broom::augment(logistic_fit_2) %>% 
+  mutate(index = 1:n()) 
+
+ggplot(data = train_df, aes(index, .std.resid, color = "viridis")) + 
+  geom_point(alpha = .5) +
+  geom_ref_line(h = 3) + 
+  labs(title = "Residual Deviance plot")
+
+plot(logistic_fit_2, which = 4, id.n = 5)
+```
+   
+We created the residual deviance plot to detect outliers. And as shown in the plot, those standardized residuals that exceed 3 represent possible outliers and may deserve closer attention. Similarly, plotting the cook's distance also signals some potential outliers in our dataset.  
+
+
 ## Random Forest
 
 
