@@ -392,3 +392,198 @@ repeated_result_df %>%
 ```
 
 Based on the proportion plot, we found that for both hotels, the cancellation proportion is significantly higher among non-repeated guests, which meets the common expectation for the repeated guest effect. 
+
+
+#### The Lead Time effect
+
+```{r leadtime, echo=F, message=F, warning=F}
+leadtime <-   
+  hotel_df %>%
+  select(hotel, is_canceled, lead_time) %>%
+  mutate(is_canceled = recode(is_canceled, "1" = "Canceled", "0" = "Not Canceled"))
+
+leadtime_box <- 
+  leadtime %>%
+  plot_ly(
+    x = ~is_canceled, y = ~lead_time,
+    type = "box", color = ~hotel, 
+    colors = "viridis"
+  ) %>%
+  layout(title = "Cancellation Distribution with Lead Time",
+         xaxis = list(title = "cancellation"),
+         yaxis = list(title = "lead time (days)"),
+         boxmode = "group"
+         )
+
+leadtime_box
+```
+
+
+#### The Deposit Type Effect
+
+```{r deposit, echo=F, message=F, warning=F}
+deposit_df <- 
+  hotel_df %>%
+  mutate(is_canceled = recode(is_canceled, "1" = "Canceled", "0" = "Not Canceled")) %>%
+  select(hotel, is_canceled, deposit_type)
+
+
+deposit_prop <- 
+  deposit_df %>%
+  group_by(deposit_type, hotel) %>%
+  summarize(
+    guest_total = n(), 
+    guest_canceled = sum(is_canceled == "Canceled")
+  ) %>%
+  mutate(
+    prop_test = map2(.x = guest_canceled, .y = guest_total, ~prop.test(x = .x, n = .y)),
+    tidy_test = map(.x = prop_test, ~broom::tidy(.x))
+  ) %>%
+  select(-prop_test) %>%
+  unnest() %>%
+  select(deposit_type, hotel, estimate, conf.low, conf.high)
+
+
+deposit_prop_plot <- 
+  deposit_prop %>%
+  mutate(text_label = str_c("\nCancellation Proportion: ", estimate)) %>%
+    plot_ly(
+    x = ~deposit_type, y = ~estimate, color = ~hotel,
+    type = "bar", colors = "viridis", text = ~text_label
+  ) %>%
+  layout(title = "Canceled Proportion with Deposit Type",
+         xaxis = list(title = "Deposit Type"),
+         yaxis = list(title = "Proportion of Cancellation", range = c(0, 1)), 
+         barmode = "group"
+)
+
+deposit_prop_plot
+```
+
+
+
+#### The Special Request Effect
+
+```{r}
+special_request_df <- 
+  hotel_df %>%
+  mutate(is_canceled = recode(is_canceled, "1" = "Canceled", "0" = "Not Canceled")) %>%
+  select(hotel, is_canceled, total_of_special_requests)
+
+
+special_request_prop <- 
+  special_request_df %>%
+  group_by(total_of_special_requests, hotel) %>%
+  summarize(
+    guest_total = n(), 
+    guest_canceled = sum(is_canceled == "Canceled")
+  ) %>%
+  mutate(
+    prop_test = map2(.x = guest_canceled, .y = guest_total, ~prop.test(x = .x, n = .y)),
+    tidy_test = map(.x = prop_test, ~broom::tidy(.x))
+  ) %>%
+  select(-prop_test) %>%
+  unnest() %>%
+  select(total_of_special_requests, hotel, estimate, conf.low, conf.high)
+
+
+special_request_prop_plot <- 
+  special_request_prop %>%
+    plot_ly(
+    x = ~total_of_special_requests, y = ~estimate, color = ~hotel,
+    type = "bar", colors = "viridis"
+  ) %>%
+  layout(title = "Canceled Proportion with Total Number of Special Request",
+         xaxis = list(title = "Number of Special Requests"),
+         yaxis = list(title = "Proportion of Cancellation", range = c(0, 1)), 
+         barmode = "group"
+)
+
+special_request_prop_plot
+```
+
+Based on the proportion plot, we found that, for city hotel, the cancellation proportion is the highest when the guests didn't ask for any special request. Similarly, for resort hotel, the cancellation proportion is also higher when guests didn't ask for any special request. 
+
+
+#### The Customer Type Effect
+
+```{r customertype, echo=F, message=F, warning=F}
+customer_df <- 
+  hotel_df %>%
+  mutate(is_canceled = recode(is_canceled, "1" = "Canceled", "0" = "Not Canceled")) %>%
+  select(hotel, is_canceled, customer_type)
+
+customer_prop <- 
+  customer_df %>%
+  group_by(customer_type, hotel) %>%
+  summarize(
+    guest_total = n(), 
+    guest_canceled = sum(is_canceled == "Canceled")
+  ) %>%
+  mutate(
+    prop_test = map2(.x = guest_canceled, .y = guest_total, ~prop.test(x = .x, n = .y)),
+    tidy_test = map(.x = prop_test, ~broom::tidy(.x))
+  ) %>%
+  select(-prop_test) %>%
+  unnest() %>%
+  select(customer_type, hotel, estimate, conf.low, conf.high)
+
+
+customer_prop_plot <- 
+  customer_prop %>%
+  mutate(customer_type = fct_reorder(customer_type, estimate)) %>%
+    plot_ly(
+    x = ~customer_type, y = ~estimate, color = ~hotel,
+    type = "bar", colors = "viridis"
+  ) %>%
+  layout(title = "Canceled Proportion with Different Customer Type",
+         xaxis = list(title = "Customer Types"),
+         yaxis = list(title = "Proportion of Cancellation", range = c(0, 1)), 
+         barmode = "group"
+)
+
+customer_prop_plot
+```
+
+Based on the proportion plot, we found that, for city hotel, the cancellation proportion is significantly higher among contract and transient customers. While for resort hotel, the cancellation proportion is significantly higher among transient party and transient customers. 
+
+
+#### The Market Segment Effect
+
+```{r segment, echo=F, message=F, warning=F}
+segment_df <- 
+  hotel_df %>%
+  mutate(is_canceled = recode(is_canceled, "1" = "Canceled", "0" = "Not Canceled")) %>%
+  select(hotel, is_canceled, market_segment)
+
+segment_prop <- 
+  segment_df %>%
+  group_by(market_segment, hotel) %>%
+  summarize(
+    guest_total = n(), 
+    guest_canceled = sum(is_canceled == "Canceled")
+  ) %>%
+  mutate(
+    prop_test = map2(.x = guest_canceled, .y = guest_total, ~prop.test(x = .x, n = .y)),
+    tidy_test = map(.x = prop_test, ~broom::tidy(.x))
+  ) %>%
+  select(-prop_test) %>%
+  unnest() %>%
+  select(market_segment, hotel, estimate, conf.low, conf.high)
+
+
+segment_prop_plot <- 
+  segment_prop %>%
+  mutate(market_segment = fct_reorder(market_segment, estimate)) %>%
+    plot_ly(
+    x = ~market_segment, y = ~estimate, color = ~hotel,
+    type = "bar", colors = "viridis"
+  ) %>%
+  layout(title = "Canceled Proportion with Different Customer Type",
+         xaxis = list(title = "Customer Types"),
+         yaxis = list(title = "Proportion of Cancellation", range = c(0, 1)), 
+         barmode = "group"
+)
+
+segment_prop_plot
+```
