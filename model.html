@@ -411,35 +411,9 @@ div.tocify {
 </div>
 <div id="logistic-regression" class="section level2">
 <h2>Logistic Regression</h2>
-<pre class="r"><code>hotel_ml = 
-  read_csv(&quot;./data/hotel_ml.csv&quot;) %&gt;% 
-  mutate(
-    is_canceled = as.factor(is_canceled)
-  ) %&gt;% 
-  mutate_if(is.character, as.factor) %&gt;% 
-  select(-arrival_date_month) %&gt;% 
-  drop_na() </code></pre>
-<pre><code>## Parsed with column specification:
-## cols(
-##   lead_time = col_double(),
-##   total_of_special_requests = col_double(),
-##   agent = col_double(),
-##   previous_cancellations = col_double(),
-##   adr = col_double(),
-##   booking_changes = col_double(),
-##   arrival_date_month = col_character(),
-##   arrival_season = col_character(),
-##   meal = col_character(),
-##   market_segment = col_character(),
-##   distribution_channel = col_character(),
-##   reserved_room_type = col_character(),
-##   deposit_type = col_character(),
-##   customer_type = col_character(),
-##   is_canceled = col_double()
-## )</code></pre>
+<div id="regression-output" class="section level4">
+<h4>Regression Output</h4>
 <p>We used stepwise selection and concluded that all of our existing variables have statistical significance.</p>
-<pre class="r"><code>fullmod = glm(is_canceled ~. , data = hotel_ml, family = binomial())
-finalmod = stats::step(fullmod, direction = &quot;both&quot;) </code></pre>
 <pre><code>## Start:  AIC=45393.28
 ## is_canceled ~ lead_time + total_of_special_requests + agent + 
 ##     previous_cancellations + adr + booking_changes + arrival_season + 
@@ -462,20 +436,6 @@ finalmod = stats::step(fullmod, direction = &quot;both&quot;) </code></pre>
 ## - total_of_special_requests  1    48908 48976
 ## - deposit_type               2    49779 49845</code></pre>
 <p>We thus fitted this model to our dataset, and generated the following output:</p>
-<pre class="r"><code>set.seed(1234)
-train_df = sample_frac(hotel_ml, 0.8)
-test_df = anti_join(hotel_ml, train_df)</code></pre>
-<pre><code>## Joining, by = c(&quot;lead_time&quot;, &quot;total_of_special_requests&quot;, &quot;agent&quot;, &quot;previous_cancellations&quot;, &quot;adr&quot;, &quot;booking_changes&quot;, &quot;arrival_season&quot;, &quot;meal&quot;, &quot;market_segment&quot;, &quot;distribution_channel&quot;, &quot;reserved_room_type&quot;, &quot;deposit_type&quot;, &quot;customer_type&quot;, &quot;is_canceled&quot;)</code></pre>
-<pre class="r"><code>logistic_fit =  
-  train_df %&gt;% 
-  glm(is_canceled ~. , data = ., family = binomial())
-
-logistic_fit %&gt;% 
-  broom::tidy() %&gt;% 
-  mutate(OR = exp(estimate)) %&gt;%
-  select(term, log_OR = estimate, OR, p.value) %&gt;% 
-  arrange(desc(OR)) %&gt;% 
-  knitr::kable(digits = 3, caption = &quot;Logistic Regression Output&quot;) </code></pre>
 <table>
 <caption>Logistic Regression Output</caption>
 <thead>
@@ -700,11 +660,10 @@ logistic_fit %&gt;%
 </tbody>
 </table>
 <p><strong>Comment</strong> As we can see from the output, deposit type: non refund has the largest odds ratio(173.389), indicating that the guests with non refundable test are significantly more likely to cancel the bookings compared to no deposit guests. This finding is rather counter-intuitive and also raises the question about the validity of the dataset.</p>
+</div>
+<div id="variable-importance" class="section level4">
+<h4>Variable Importance</h4>
 <p>We furthur generated the most important variables of our model:</p>
-<pre class="r"><code>caret::varImp(logistic_fit) %&gt;%
-  arrange(desc(Overall)) %&gt;%
-  filter(Overall &gt; 10) %&gt;% 
-  knitr::kable(digits = 3, caption = &quot;Variable Importance&quot;)</code></pre>
 <table>
 <caption>Variable Importance</caption>
 <thead>
@@ -751,10 +710,27 @@ logistic_fit %&gt;%
 <p>We will look more into the four most important features:<br />
 * Total special requests * deposit type * adr<br />
 (can i use plots from ead?)</p>
-<p>Since we are questioning the validity of deposit type, we fitted the logistic regression models withou the deposit type. We then compared the prediction accuracy of the two models using 10 fold cross validation:</p>
 </div>
-<div id="random-forest" class="section level2">
-<h2>Random Forest</h2>
+<div id="cross-validation" class="section level4">
+<h4>Cross Validation</h4>
+<p>Since we are questioning the validity of deposit type, we fitted the logistic regression models without the deposit type. We then compared the prediction accuracy of the two models:</p>
+<table>
+<caption>Model Accuracy</caption>
+<thead>
+<tr class="header">
+<th align="right">Model1 accuracy</th>
+<th align="right">Model2 accuracy</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">0.757</td>
+<td align="right">0.749</td>
+</tr>
+</tbody>
+</table>
+<p>We can see that the two models have roughly the same prediction accuracy! ## Random Forest</p>
+</div>
 </div>
 
 
