@@ -146,7 +146,7 @@ hotel_ml =
   ) %>% 
   mutate_if(is.character, as.factor) %>% 
   select(-arrival_date_month) %>% 
-  drop_na()
+  drop_na() 
 ```
 
 ```{r}
@@ -174,9 +174,34 @@ test_df = anti_join(hotel_ml, train_df)
 
 ```{r}
 logistic_fit =  
-train_df %>% 
-glm(is_canceled ~. , data = ., family = binomial())
+  train_df %>% 
+  glm(is_canceled ~. , data = ., family = binomial())
 ```
+
+Model output: 
+```{r}
+logistic_fit %>% 
+  broom::tidy() %>% 
+  mutate(OR = exp(estimate)) %>%
+  select(term, log_OR = estimate, OR, p.value) %>% 
+  arrange(desc(OR)) %>% 
+  knitr::kable(digits = 3, caption = "Logistic Regression Output") 
+```
+
+**Comment** As we can see from the output, deposit type: non refund has the largest odds ratio(173.389), indicating that the guests with non refundable test are significantly more likely to cancel the bookings compared to no deposit guests. This finding is rather counter-intuitive and also raises the question about the validity of the dataset.  
+
+We furthur generated the most important variables of our model:  
+```{r variable importance}
+caret::varImp(logistic_fit) %>%
+ arrange(desc(Overall)) %>%
+ knitr::kable(digits = 3)
+```
+
+We will look more into the four most important features:  
+* Total special requests
+* deposit type 
+* adr  
+
 
 
 ```{r}
@@ -187,7 +212,6 @@ predicted.classes <- ifelse(probabilities > 0.5, "1", "0")
 observed.classes <- test_df$is_canceled
 mean(predicted.classes == observed.classes, na.rm = T)
 ```
-
 
 
 use cross validation
@@ -222,12 +246,7 @@ regression output:
 #   knitr::kable(digits = 3)
 ```
 
-variable importance:
-```{r}
-# caret::varImp(fit_logistic) %>% 
-#   arrange(desc(Overall)) %>% 
-#   knitr::kable(digits = 3)
-```
+
 model evaluation & diagnoistics 
 possible outliers:
 

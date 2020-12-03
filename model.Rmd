@@ -10,6 +10,7 @@ output:
 ```{r setup, include=FALSE}
 library(tidyverse)
 library(plotly)
+library(modelr)
 knitr::opts_chunk$set(
 echo = TRUE,
 warning = FALSE,
@@ -58,6 +59,98 @@ write.csv(hotel_ml,"./data/hotel_ml.csv",row.names = F)
 
 ```
 
+## Data Description 
 
+## Logistic Regression  
+
+```{r data import,echo=FALSE, message=F}
+hotel_ml = 
+  read_csv("./data/hotel_ml.csv") %>% 
+  mutate(
+    is_canceled = as.factor(is_canceled)
+  ) %>% 
+  mutate_if(is.character, as.factor) %>% 
+  select(-arrival_date_month) %>% 
+  drop_na() 
+```
+
+#### Regression Output  
+We used stepwise selection and concluded that all of our existing variables have statistical significance.
+```{r echo=FALSE, message=F}
+fullmod = glm(is_canceled ~. , data = hotel_ml, family = binomial())
+finalmod = stats::step(fullmod, direction = "both") 
+```
+
+We thus fitted this model to our dataset, and generated the following output: 
+```{r test/train split,echo=FALSE, message=F}
+set.seed(1234)
+train_df = sample_frac(hotel_ml, 0.8)
+test_df = anti_join(hotel_ml, train_df)
+
+logistic_fit =  
+  train_df %>% 
+  glm(is_canceled ~. , data = ., family = binomial())
+
+logistic_fit %>% 
+  broom::tidy() %>% 
+  mutate(OR = exp(estimate)) %>%
+  select(term, log_OR = estimate, OR, p.value) %>% 
+  arrange(desc(OR)) %>% 
+  knitr::kable(digits = 3, caption = "Logistic Regression Output") 
+```
+
+**Comment** As we can see from the output, deposit type: non refund has the largest odds ratio(173.389), indicating that the guests with non refundable test are significantly more likely to cancel the bookings compared to no deposit guests. This finding is rather counter-intuitive and also raises the question about the validity of the dataset. 
+
+#### Variable Importance 
+We furthur generated the most important variables of our model:  
+```{r variable importance,echo=FALSE, message=F}
+caret::varImp(logistic_fit) %>%
+  arrange(desc(Overall)) %>%
+  filter(Overall > 10) %>% 
+  knitr::kable(digits = 3, caption = "Variable Importance")
+```
+
+We will look more into the four most important features:  
+* Total special requests
+* deposit type 
+* adr  
+(can i use plots from ead?)
+
+#### Cross Validation  
+Since we are questioning the validity of deposit type, we fitted the logistic regression models without the deposit type. We then compared the prediction accuracy of the two models:
+```{r ,echo=FALSE, message=F}
+logistic_fit_2 = 
+  train_df %>% 
+  glm(is_canceled ~.-deposit_type , data = ., family = binomial())
+
+test_df %>% 
+  add_predictions(logistic_fit) %>% 
+  mutate(
+    prob_model_1 = boot::inv.logit(pred),
+    pred_mod1 = 
+      case_when(
+        prob_model_1 < 0.5 ~ 0,
+        prob_model_1 >= 0.5 ~ 1
+         )) %>% 
+  select(-pred, -prob_model_1) %>% 
+  add_predictions(logistic_fit_2) %>% 
+   mutate(
+    prob_model_2 = boot::inv.logit(pred),
+    pred_mod2 = 
+      case_when(
+        prob_model_2 < 0.5 ~ 0,
+        prob_model_2 >= 0.5 ~ 1
+         )) %>% 
+  select(is_canceled, pred_mod1, pred_mod2) %>% 
+  summarise(
+    model1_accuracy = sum(is_canceled==pred_mod1)/ nrow(test_df),
+    model2_accuracy = sum(is_canceled==pred_mod2)/ nrow(test_df)
+  ) %>% 
+  knitr::kable(digits = 3, 
+               caption = "Model Accuracy",  
+               col.names = c("Model1 accuracy", "Model2 accuracy"))
+```
+We can see that the two models have roughly the same prediction accuracy! 
+## Random Forest
 
 

@@ -13,6 +13,7 @@
 
 <title>Model Building</title>
 
+<script src="site_libs/header-attrs-2.3/header-attrs.js"></script>
 <script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="site_libs/bootstrap-3.3.5/css/journal.min.css" rel="stylesheet" />
@@ -405,6 +406,356 @@ div.tocify {
 
 <p><img src="images/model.jpg"><br />
 <em>image source: google</em></p>
+<div id="data-description" class="section level2">
+<h2>Data Description</h2>
+</div>
+<div id="logistic-regression" class="section level2">
+<h2>Logistic Regression</h2>
+<pre class="r"><code>hotel_ml = 
+  read_csv(&quot;./data/hotel_ml.csv&quot;) %&gt;% 
+  mutate(
+    is_canceled = as.factor(is_canceled)
+  ) %&gt;% 
+  mutate_if(is.character, as.factor) %&gt;% 
+  select(-arrival_date_month) %&gt;% 
+  drop_na() </code></pre>
+<pre><code>## Parsed with column specification:
+## cols(
+##   lead_time = col_double(),
+##   total_of_special_requests = col_double(),
+##   agent = col_double(),
+##   previous_cancellations = col_double(),
+##   adr = col_double(),
+##   booking_changes = col_double(),
+##   arrival_date_month = col_character(),
+##   arrival_season = col_character(),
+##   meal = col_character(),
+##   market_segment = col_character(),
+##   distribution_channel = col_character(),
+##   reserved_room_type = col_character(),
+##   deposit_type = col_character(),
+##   customer_type = col_character(),
+##   is_canceled = col_double()
+## )</code></pre>
+<p>We used stepwise selection and concluded that all of our existing variables have statistical significance.</p>
+<pre class="r"><code>fullmod = glm(is_canceled ~. , data = hotel_ml, family = binomial())
+finalmod = stats::step(fullmod, direction = &quot;both&quot;) </code></pre>
+<pre><code>## Start:  AIC=45393.28
+## is_canceled ~ lead_time + total_of_special_requests + agent + 
+##     previous_cancellations + adr + booking_changes + arrival_season + 
+##     meal + market_segment + distribution_channel + reserved_room_type + 
+##     deposit_type + customer_type
+## 
+##                             Df Deviance   AIC
+## &lt;none&gt;                            45323 45393
+## - agent                      1    45329 45397
+## - previous_cancellations     1    45340 45408
+## - reserved_room_type         7    45371 45427
+## - distribution_channel       3    45466 45530
+## - meal                       4    45498 45560
+## - customer_type              3    45544 45608
+## - booking_changes            1    45541 45609
+## - arrival_season             3    45659 45723
+## - adr                        1    45721 45789
+## - lead_time                  1    46488 46556
+## - market_segment             6    46718 46776
+## - total_of_special_requests  1    48908 48976
+## - deposit_type               2    49779 49845</code></pre>
+<p>We thus fitted this model to our dataset, and generated the following output:</p>
+<pre class="r"><code>set.seed(1234)
+train_df = sample_frac(hotel_ml, 0.8)
+test_df = anti_join(hotel_ml, train_df)</code></pre>
+<pre><code>## Joining, by = c(&quot;lead_time&quot;, &quot;total_of_special_requests&quot;, &quot;agent&quot;, &quot;previous_cancellations&quot;, &quot;adr&quot;, &quot;booking_changes&quot;, &quot;arrival_season&quot;, &quot;meal&quot;, &quot;market_segment&quot;, &quot;distribution_channel&quot;, &quot;reserved_room_type&quot;, &quot;deposit_type&quot;, &quot;customer_type&quot;, &quot;is_canceled&quot;)</code></pre>
+<pre class="r"><code>logistic_fit =  
+  train_df %&gt;% 
+  glm(is_canceled ~. , data = ., family = binomial())
+
+logistic_fit %&gt;% 
+  broom::tidy() %&gt;% 
+  mutate(OR = exp(estimate)) %&gt;%
+  select(term, log_OR = estimate, OR, p.value) %&gt;% 
+  arrange(desc(OR)) %&gt;% 
+  knitr::kable(digits = 3, caption = &quot;Logistic Regression Output&quot;) </code></pre>
+<table>
+<caption>Logistic Regression Output</caption>
+<thead>
+<tr class="header">
+<th align="left">term</th>
+<th align="right">log_OR</th>
+<th align="right">OR</th>
+<th align="right">p.value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">deposit_typeNon Refund</td>
+<td align="right">5.156</td>
+<td align="right">173.389</td>
+<td align="right">0.000</td>
+</tr>
+<tr class="even">
+<td align="left">market_segmentOnline TA</td>
+<td align="right">1.479</td>
+<td align="right">4.388</td>
+<td align="right">0.007</td>
+</tr>
+<tr class="odd">
+<td align="left">market_segmentDirect</td>
+<td align="right">0.981</td>
+<td align="right">2.668</td>
+<td align="right">0.088</td>
+</tr>
+<tr class="even">
+<td align="left">mealFB</td>
+<td align="right">0.745</td>
+<td align="right">2.106</td>
+<td align="right">0.000</td>
+</tr>
+<tr class="odd">
+<td align="left">market_segmentComplementary</td>
+<td align="right">0.713</td>
+<td align="right">2.041</td>
+<td align="right">0.357</td>
+</tr>
+<tr class="even">
+<td align="left">customer_typeTransient</td>
+<td align="right">0.662</td>
+<td align="right">1.938</td>
+<td align="right">0.000</td>
+</tr>
+<tr class="odd">
+<td align="left">market_segmentGroups</td>
+<td align="right">0.656</td>
+<td align="right">1.928</td>
+<td align="right">0.230</td>
+</tr>
+<tr class="even">
+<td align="left">mealSC</td>
+<td align="right">0.302</td>
+<td align="right">1.352</td>
+<td align="right">0.000</td>
+</tr>
+<tr class="odd">
+<td align="left">reserved_room_typeB</td>
+<td align="right">0.195</td>
+<td align="right">1.215</td>
+<td align="right">0.069</td>
+</tr>
+<tr class="even">
+<td align="left">market_segmentOffline TA/TO</td>
+<td align="right">0.151</td>
+<td align="right">1.163</td>
+<td align="right">0.781</td>
+</tr>
+<tr class="odd">
+<td align="left">previous_cancellations</td>
+<td align="right">0.136</td>
+<td align="right">1.145</td>
+<td align="right">0.000</td>
+</tr>
+<tr class="even">
+<td align="left">customer_typeTransient-Party</td>
+<td align="right">0.117</td>
+<td align="right">1.124</td>
+<td align="right">0.353</td>
+</tr>
+<tr class="odd">
+<td align="left">reserved_room_typeD</td>
+<td align="right">0.115</td>
+<td align="right">1.121</td>
+<td align="right">0.001</td>
+</tr>
+<tr class="even">
+<td align="left">adr</td>
+<td align="right">0.007</td>
+<td align="right">1.007</td>
+<td align="right">0.000</td>
+</tr>
+<tr class="odd">
+<td align="left">lead_time</td>
+<td align="right">0.005</td>
+<td align="right">1.005</td>
+<td align="right">0.000</td>
+</tr>
+<tr class="even">
+<td align="left">agent</td>
+<td align="right">0.000</td>
+<td align="right">1.000</td>
+<td align="right">0.030</td>
+</tr>
+<tr class="odd">
+<td align="left">reserved_room_typeE</td>
+<td align="right">-0.024</td>
+<td align="right">0.976</td>
+<td align="right">0.702</td>
+</tr>
+<tr class="even">
+<td align="left">mealUndefined</td>
+<td align="right">-0.066</td>
+<td align="right">0.936</td>
+<td align="right">0.683</td>
+</tr>
+<tr class="odd">
+<td align="left">arrival_seasonWinter</td>
+<td align="right">-0.209</td>
+<td align="right">0.811</td>
+<td align="right">0.000</td>
+</tr>
+<tr class="even">
+<td align="left">reserved_room_typeC</td>
+<td align="right">-0.217</td>
+<td align="right">0.805</td>
+<td align="right">0.264</td>
+</tr>
+<tr class="odd">
+<td align="left">reserved_room_typeF</td>
+<td align="right">-0.234</td>
+<td align="right">0.791</td>
+<td align="right">0.004</td>
+</tr>
+<tr class="even">
+<td align="left">booking_changes</td>
+<td align="right">-0.317</td>
+<td align="right">0.728</td>
+<td align="right">0.000</td>
+</tr>
+<tr class="odd">
+<td align="left">reserved_room_typeG</td>
+<td align="right">-0.433</td>
+<td align="right">0.649</td>
+<td align="right">0.000</td>
+</tr>
+<tr class="even">
+<td align="left">mealHB</td>
+<td align="right">-0.433</td>
+<td align="right">0.648</td>
+<td align="right">0.000</td>
+</tr>
+<tr class="odd">
+<td align="left">arrival_seasonSpring</td>
+<td align="right">-0.462</td>
+<td align="right">0.630</td>
+<td align="right">0.000</td>
+</tr>
+<tr class="even">
+<td align="left">reserved_room_typeH</td>
+<td align="right">-0.469</td>
+<td align="right">0.626</td>
+<td align="right">0.003</td>
+</tr>
+<tr class="odd">
+<td align="left">arrival_seasonSummer</td>
+<td align="right">-0.602</td>
+<td align="right">0.548</td>
+<td align="right">0.000</td>
+</tr>
+<tr class="even">
+<td align="left">total_of_special_requests</td>
+<td align="right">-1.021</td>
+<td align="right">0.360</td>
+<td align="right">0.000</td>
+</tr>
+<tr class="odd">
+<td align="left">customer_typeGroup</td>
+<td align="right">-1.204</td>
+<td align="right">0.300</td>
+<td align="right">0.007</td>
+</tr>
+<tr class="even">
+<td align="left">(Intercept)</td>
+<td align="right">-1.317</td>
+<td align="right">0.268</td>
+<td align="right">0.015</td>
+</tr>
+<tr class="odd">
+<td align="left">distribution_channelTA/TO</td>
+<td align="right">-1.540</td>
+<td align="right">0.214</td>
+<td align="right">0.000</td>
+</tr>
+<tr class="even">
+<td align="left">deposit_typeRefundable</td>
+<td align="right">-1.568</td>
+<td align="right">0.208</td>
+<td align="right">0.040</td>
+</tr>
+<tr class="odd">
+<td align="left">market_segmentCorporate</td>
+<td align="right">-1.645</td>
+<td align="right">0.193</td>
+<td align="right">0.004</td>
+</tr>
+<tr class="even">
+<td align="left">distribution_channelDirect</td>
+<td align="right">-2.204</td>
+<td align="right">0.110</td>
+<td align="right">0.000</td>
+</tr>
+<tr class="odd">
+<td align="left">distribution_channelGDS</td>
+<td align="right">-2.874</td>
+<td align="right">0.056</td>
+<td align="right">0.000</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Comment</strong> As we can see from the output, deposit type: non refund has the largest odds ratio(173.389), indicating that the guests with non refundable test are significantly more likely to cancel the bookings compared to no deposit guests. This finding is rather counter-intuitive and also raises the question about the validity of the dataset.</p>
+<p>We furthur generated the most important variables of our model:</p>
+<pre class="r"><code>caret::varImp(logistic_fit) %&gt;%
+  arrange(desc(Overall)) %&gt;%
+  filter(Overall &gt; 10) %&gt;% 
+  knitr::kable(digits = 3, caption = &quot;Variable Importance&quot;)</code></pre>
+<table>
+<caption>Variable Importance</caption>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="right">Overall</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">total_of_special_requests</td>
+<td align="right">48.779</td>
+</tr>
+<tr class="even">
+<td align="left">deposit_typeNon Refund</td>
+<td align="right">32.904</td>
+</tr>
+<tr class="odd">
+<td align="left">lead_time</td>
+<td align="right">30.214</td>
+</tr>
+<tr class="even">
+<td align="left">adr</td>
+<td align="right">17.725</td>
+</tr>
+<tr class="odd">
+<td align="left">arrival_seasonSummer</td>
+<td align="right">15.405</td>
+</tr>
+<tr class="even">
+<td align="left">booking_changes</td>
+<td align="right">12.763</td>
+</tr>
+<tr class="odd">
+<td align="left">arrival_seasonSpring</td>
+<td align="right">12.659</td>
+</tr>
+<tr class="even">
+<td align="left">distribution_channelTA/TO</td>
+<td align="right">10.285</td>
+</tr>
+</tbody>
+</table>
+<p>We will look more into the four most important features:<br />
+* Total special requests * deposit type * adr<br />
+(can i use plots from ead?)</p>
+<p>Since we are questioning the validity of deposit type, we fitted the logistic regression models withou the deposit type. We then compared the prediction accuracy of the two models using 10 fold cross validation:</p>
+</div>
+<div id="random-forest" class="section level2">
+<h2>Random Forest</h2>
+</div>
 
 
 
