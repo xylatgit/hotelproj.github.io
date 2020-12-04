@@ -14,6 +14,7 @@ library(tidyverse)
 library(plotly)
 library(ggplot2)
 library(modelr)
+library(ROCR)
 
 theme_set(theme_minimal() + theme(legend.position = "bottom"))
 options(
@@ -26,23 +27,80 @@ scale_fill_discrete = scale_fill_viridis_d
 
 ## Motivation 
 ## Related work
+* Antonio N., Almeida A., Nunes L. (2019). Hotel Booking Demand Datasets. Data in Brief. Vol 22. 41-49.
+
 ## Initial Questions
+* Where do the guests come from?   
+* How does price vary over the year?    
+* What are the potential factors which could influence the cancellation of both hotels?
+
 ## Data
 ```{r data,echo=FALSE, message=F}
 hotel_whole_df <- read.csv("./data/hotel_bookings.csv",na = c("", "NA", "NULL")) 
 hotel_df <- hotel_whole_df %>% filter(arrival_date_year==2016)
 ```
-The data [**Hotel Booking Demand Dataset**](https://www.sciencedirect.com/science/article/pii/S2352340918315191) were collected from two hotels (Resort hotel and City hotel) located in Portugal. It contains hotel booking information between the 1st of July of 2015 and the 31st of August 2017, including bookings that effectively arrived and bookings that were canceled.          
-The dimension of the original published dataset is `r nrow(hotel_whole_df)` rows by `r ncol(hotel_whole_df)` columns. After filtering instances from year 2016, the resulting dataset has `r nrow(hotel_df)` rows.  
+
+> **Primary Data Source** 
+
+ [**Hotel Booking Demand Dataset**](https://www.sciencedirect.com/science/article/pii/S2352340918315191) 
+ 
+> **Variable of Interest**
+
+The original dataset contains information from 2015 to 2017. To avoid the caveat of time series and for a speedier performance of our model, we only included the year 2016 for our analysis. In order to identify any seasonality trend over the year, we created a new variable containing the arrival season of the guests. We then mutated the character variables as factors and additionally some numeric variables that would be better explained as factors. To avoid collinearlity, we kept arrival season and exluced arrival month. Finally, to satisfy our aim of predicting booking cancelation, we selected the following variables that we desired to include in our model:  
+
+  1. Outcome:\
+ _IsCanceled_: Values indicating if the booking was canceled (1) or not (0).\
+ \
+  2. Potential Predictors:\
+  * _Categorical Variables_:\
+    + _ArrivalDateMonth_: Month of arrival date with 12 categories: “January” to “December”.
+    + _CustomerType_: Types of booking, assuming one of the four categories:\
+-Contract:  when the booking has an allotment or other type of contract associated with it (long-term stay);\
+-Group: when the booking is associated with a group;\
+-Transient: when the booking is not part of a group or contract and is not associated with other transient bookings (these are guests who are predominantly on-the-move and seek short (and often urgent) hotel-stays)\
+-Transient-party:  when the booking is transient but is associated with at least another transient booking.\
+    + _DepositType_: Indication on if the customer made a deposit to guarantee the booking. The variable can assume 3 categories:
+-No Deposit;\
+-Non Refund: Deposit value equals or exceeds the total stay cost;\
+-Refundable: Deposit value under the total stay cost.\
+    + _DistributionChannel_: Booking distribution channel (“TA” means travel agent; “TO” means tour operator).\
+    + Hotel: City Hotel or Resort Hotel. \
+    + _MarketSegment_: Market segment designation (“TA” means travel agent; “TO” means tour operator). \
+    + _Meal_: Type of meal booked.\
+-Undefined/SC: no meal package;\
+-BB: Bed & breakfast;\
+-HB: Half board (breakfast and one other meal)\
+-FB: Full board (breakfast, lunch, and dinner)\
+    + _ReservedRoomType_: Code of room type reserved. Code is presented instead of designation for anonymity reasons.\
+    
+  * _Numeric Variables_:\
+    + _ADR_: Average daily rate.\
+    + _BookingChanges_: Number of changes/amendments made to the booking from the moment the booking was entered on the PMS until the moment of check-in or cancellation. \
+    + _PreviousCancellations_: Number of previous bookings that were canceled by the customer prior to the current booking.\
+    + _LeadTime_: Number of days that elapsed between the entering date of the booking into the PMS and the arrival date. \
+    + _TotalOfSpecialRequests_: Number of special requests made by the customer (e.g. twin bed or high floor)\
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
 
 
 ## Exploratory Analysis
-We aim to answer the following questions using EDA:   
-
-* Where do the guests come from?   
-* How does price vary over the year?    
-* What are the potential factors which could influence the cancellation of both hotels?    
-
 We first used a choropleth map and a donut chart to visualize the proportions of guests' nationality. We observed that most guests come from Europe and top three nationality are Portuguese, with British and French guest come second and third.     
 
 We then tried to explore how the ADR(average daily rate) change over time. Therefore, we used group by summary to produce the mean ADR by month, and plotted these values using line chart. To illustrate how the ADR varies, we also added confidence band to the average line. We observed that the ADR is pretty stable across the years for city hotel, which is reasonable according to the booking demand pattern. For resort hotel, we see a sharp increase in ADR from May to November with the price level peaking during summer. This finding is also intuitive since we expect the demand for resort hotel increases in summer. 
@@ -50,27 +108,7 @@ We then tried to explore how the ADR(average daily rate) change over time. There
 
 
 ## Statistical Analysis 
-### Data preprocessing 
-The original dataset contains information from 2015 to 2017. To avoid the caveat of time series and for a speedier performance of our model, we only included the year 2016 for our analysis. In order to identify any seasonality trend over the year, we created a new variable containing the arrival season of the guests. We then mutated the character variables as factors and additionally some numeric variables that would be better explained as factors. To avoid collinearlity, we kept arrival season and exluced arrival month. Finally, to satisfy our aim of predicting booking cancelation, we selected the following variables that we desired to include in our model:  
-<br>
-Outcome of interest:  
-*is_canceled*: Value indicating if the booking was canceled (1) or not (0).  
-<br>
-Possible predictors:  
-*lead_time*: Number of days that elapsed between the entering date of the booking into the PMS and the arrival date.    
-*total_of_special_requests*: Number of special requests made by the customer (e.g. twin bed or high floor).  
-*agent*: ID of the travel agency that made the booking.  
-*previous_cancellations*: Number of previous bookings that were cancelled by the customer prior to the current booking.  
-*adr*: Average Daily Rate.  
-*booking_changes*:Number of changes/amendments made to the booking from the moment the booking was entered on the PMS until the moment of check-in or cancellation.       
-*arrival_season*:Season of arrival date.   
-*meal*:Type of meal booked.  
-*market_segment*:Market segment designation.     
-*distribution_channel*:Booking distribution channel.    
-*reserved_room_type*:Code of room type reserved.  
-*deposit_type*:Indication on if the customer made a deposit to guarantee the booking.  
-*customer_type*: Type of booking.  
-<br>
+
 
 ### Logistic Regression  
 ```{r data import,echo=FALSE, message=F}

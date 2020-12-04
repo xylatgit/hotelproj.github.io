@@ -15,7 +15,33 @@ library(caret)
 
 
 ```{r data,message=F,echo=F,warning=F}
-hotel_ml <- read.csv("./data/hotel_ml.csv")
+hotel_df = 
+  read.csv("./data/hotel_bookings.csv",na = c("", "NA", "NULL")) %>% 
+  mutate_if(is.character, as.factor)
+
+hotel_ml = 
+  hotel_df %>%
+  filter(arrival_date_year==2016) %>%
+  mutate(
+    arrival_season = case_when(
+      arrival_date_month %in% c("October","November","December") ~ "Fall",
+      arrival_date_month %in% c("January","February","March") ~ "Winter",
+      arrival_date_month %in% c("April","May","June") ~ "Spring",
+      TRUE ~ "Summer"
+    ),
+    arrival_season = as.factor(arrival_season),
+    reserved_room_type = as.character(reserved_room_type),
+    assigned_room_type = as.character(assigned_room_type),
+    is_canceled = as.factor(is_canceled),
+    
+    false_room_assignment = case_when(
+      reserved_room_type == assigned_room_type ~ "0",
+      reserved_room_type != assigned_room_type ~ "1"
+    ),
+    false_room_assignment = as.factor(false_room_assignment)) %>%
+    select(adr, booking_changes, previous_cancellations, lead_time, total_of_special_requests, arrival_season, customer_type,  deposit_type, distribution_channel, hotel, meal, market_segment,  reserved_room_type, false_room_assignment) 
+  
+
 
 hotel_ml %>% is.na %>% melt %>% 
   ggplot(data = .,aes(x = Var2, y = Var1)) + geom_tile(aes(fill = value,width=0.95)) +
@@ -30,12 +56,12 @@ hotel_ml %>% is.na %>% melt %>%
   labs(title = 'Missing values in each column', subtitle='represented as white bars')
 
 ```
-The majority of missing value in the dataset comes from variable _agent_. The number of missing value in the column is `r sum(is.na(hotel_ml$agent))`, which is `r sum(is.na(hotel_ml$agent))/nrow(hotel_ml)*100`% of the total observations.
 
-```{r agent distribution}
-hotel_ml %>% 
-  ggplot(aes(x=agent))+geom_histogram(aes(y = ..density..),binwidth = 10,color = "grey30", fill = "white")+
-  geom_density(alpha = .2, fill = "red")
+
+# ```{r agent distribution}
+# hotel_ml %>% 
+#   ggplot(aes(x=agent))+geom_histogram(aes(y = ..density..),binwidth = 10,color = "grey30", fill = "white")+
+#   geom_density(alpha = .2, fill = "red")
 ```
 
 
