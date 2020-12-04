@@ -417,6 +417,7 @@ leadtime_box <-
 
 leadtime_box
 ```
+Based on the box plot, we found that, for both city and resort hotels, the medians of lead time among being canceled reservations are relatively higher than those of not being canceled. 
 
 
 #### The Deposit Type Effect
@@ -460,11 +461,13 @@ deposit_prop_plot <-
 deposit_prop_plot
 ```
 
+Based on the proportion plot, we found that for both resort and city hotels, reservations with non-refundable deposit have about 94% and 99% of cancellation respectively, which is significantly higher than other two types of deposits. For reservations with refundable deposit, we found that the cancellation of city hotel is relatively higher than that of resort hotel. 
+
 
 
 #### The Special Request Effect
 
-```{r}
+```{r specialrequest, echo=F, message=F, warning=F}
 special_request_df <- 
   hotel_df %>%
   mutate(is_canceled = recode(is_canceled, "1" = "Canceled", "0" = "Not Canceled")) %>%
@@ -545,10 +548,19 @@ customer_prop_plot <-
 customer_prop_plot
 ```
 
-Based on the proportion plot, we found that, for city hotel, the cancellation proportion is significantly higher among contract and transient customers. While for resort hotel, the cancellation proportion is significantly higher among transient party and transient customers. 
+Based on the proportion plot, we found that for city hotel, the cancellation proportion is significantly higher among contract and transient customers. While for resort hotel, the cancellation proportion is significantly higher among transient party and transient customers. 
 
 
 #### The Market Segment Effect
+
+For the two hotels analyzed in this report, there are seven market segment designations for customers to reserve rooms. 
+Aviation
+Complementary 
+Corporate
+Direct
+Groups
+Offline travel agents or tour operators, abbreviated as offline TA/TO later
+Online travel agents, abbreviated as online TA later
 
 ```{r segment, echo=F, message=F, warning=F}
 segment_df <- 
@@ -587,3 +599,5 @@ segment_prop_plot <-
 
 segment_prop_plot
 ```
+
+Based on the proportion plot, we found that for city hotel, the cancellation proportion is significantly higher among grouped customers, and relatively higher among offline TA/TO and online TA  reservation customers. For the resort hotel, the grouped customers and customers reserved through online TA has relatively higher cancellation proportion than other types of customers. 
