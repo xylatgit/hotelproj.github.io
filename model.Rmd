@@ -116,7 +116,120 @@ We will look more into the four most important features:
 * Total special requests
 * deposit type 
 * adr  
-(can i use plots from ead?)
+<br> 
+
+##### The Special Request Effect
+
+```{r specialrequest, echo=F, message=F, warning=F}
+special_request_df <- 
+  hotel_df %>%
+  mutate(is_canceled = recode(is_canceled, "1" = "Canceled", "0" = "Not Canceled")) %>%
+  select(hotel, is_canceled, total_of_special_requests)
+
+
+special_request_prop <- 
+  special_request_df %>%
+  group_by(total_of_special_requests, hotel) %>%
+  summarize(
+    guest_total = n(), 
+    guest_canceled = sum(is_canceled == "Canceled")
+  ) %>%
+  mutate(
+    prop_test = map2(.x = guest_canceled, .y = guest_total, ~prop.test(x = .x, n = .y)),
+    tidy_test = map(.x = prop_test, ~broom::tidy(.x))
+  ) %>%
+  select(-prop_test) %>%
+  unnest() %>%
+  select(total_of_special_requests, hotel, estimate, conf.low, conf.high)
+
+
+special_request_prop_plot <- 
+  special_request_prop %>%
+    plot_ly(
+    x = ~total_of_special_requests, y = ~estimate, color = ~hotel,
+    type = "bar", colors = "viridis"
+  ) %>%
+  layout(title = "Canceled Proportion with Total Number of Special Request",
+         xaxis = list(title = "Number of Special Requests"),
+         yaxis = list(title = "Proportion of Cancellation", range = c(0, 1)), 
+         barmode = "group"
+)
+
+special_request_prop_plot
+```
+
+Based on the proportion plot, we found that, for city hotel, the cancellation proportion is the highest when the guests didn't ask for any special request. Similarly, for resort hotel, the cancellation proportion is also higher when guests didn't ask for any special request. 
+ 
+<br> 
+##### The Deposit Type Effect
+
+```{r deposit, echo=F, message=F, warning=F}
+deposit_df <- 
+  hotel_df %>%
+  mutate(is_canceled = recode(is_canceled, "1" = "Canceled", "0" = "Not Canceled")) %>%
+  select(hotel, is_canceled, deposit_type)
+
+
+deposit_prop <- 
+  deposit_df %>%
+  group_by(deposit_type, hotel) %>%
+  summarize(
+    guest_total = n(), 
+    guest_canceled = sum(is_canceled == "Canceled")
+  ) %>%
+  mutate(
+    prop_test = map2(.x = guest_canceled, .y = guest_total, ~prop.test(x = .x, n = .y)),
+    tidy_test = map(.x = prop_test, ~broom::tidy(.x))
+  ) %>%
+  select(-prop_test) %>%
+  unnest() %>%
+  select(deposit_type, hotel, estimate, conf.low, conf.high)
+
+
+deposit_prop_plot <- 
+  deposit_prop %>%
+  mutate(text_label = str_c("\nCancellation Proportion: ", estimate)) %>%
+    plot_ly(
+    x = ~deposit_type, y = ~estimate, color = ~hotel,
+    type = "bar", colors = "viridis", text = ~text_label
+  ) %>%
+  layout(title = "Canceled Proportion with Deposit Type",
+         xaxis = list(title = "Deposit Type"),
+         yaxis = list(title = "Proportion of Cancellation", range = c(0, 1)), 
+         barmode = "group"
+)
+
+deposit_prop_plot
+```
+
+Based on the proportion plot, we found that for both resort and city hotels, reservations with non-refundable deposit have about 94% and 99% of cancellation respectively, which is significantly higher than other two types of deposits. For reservations with refundable deposit, we found that the cancellation of city hotel is relatively higher than that of resort hotel. This counter intuitive finding confirmed with the previous odds ratios. We therefore suspected the validity of this variable.  
+
+<br>
+##### The ADR Effect
+```{r echo=F, message=F, warning=F}
+hotel_df %>% 
+  select(is_canceled, adr) %>% 
+  group_by(adr) %>% 
+  summarize(
+    total = n(),
+    canceled = sum(is_canceled == 1),
+    prop = round(canceled/total, 2)
+  ) %>% 
+  filter(total > 10) %>% 
+  drop_na() %>% 
+  mutate(
+    fv = lm(prop ~ adr, .) %>%  fitted.values()
+  ) %>% 
+  plot_ly(x = ~adr, y = ~prop, mode = "markers") %>%
+  add_markers(y = ~prop) %>% 
+  add_trace(x = ~adr, y = ~fv, mode = "lines") %>% 
+  layout(title = "Average Daily Rate (ADR) and Cancellation", 
+         xaxis = list(title = "ADR"), 
+         yaxis = list(title = "Cancellation Proportion"),
+         showlegend = F)
+```
+
+From this plot, there is no clear trend detected. We see that the proportion of cancelation slight increases with increase in ADR.
 
 #### Cross Validation  
 Since we are questioning the validity of deposit type, we fitted the logistic regression models without the deposit type. We then compared the prediction accuracy of the two models:
