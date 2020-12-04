@@ -201,8 +201,14 @@ We will look more into the four most important features:
 * Total special requests
 * deposit type 
 * adr  
+(can i use plots from ead?)
 
+Since we are questioning the validity of deposit type, we fitted the logistic regression models withou the deposit type. We then compared the prediction accuracy of the two models using 10 fold cross validation: 
+```{r}
+cv_df = crossv_mc(hotel_ml, 10) 
+cv_df = 
 
+```
 
 ```{r}
 # Make predictions
@@ -224,7 +230,7 @@ use cross validation
 #     test = map(test, as_tibble),
 #     fit_logistic = map(train, ~glm(is_canceled ~. , data = .x, family = binomial()))
 #   )
-#   
+#
 ```
 
 
@@ -235,15 +241,6 @@ fit logistic regression:
 # fit_logistic = 
 #   train_df %>% 
 #   glm(is_canceled ~. , data = ., family = binomial())
-```
-
-regression output:
-```{r}
-# fit_logistic %>% 
-#   broom::tidy() %>% 
-#   mutate(OR = exp(estimate)) %>%
-#   select(term, log_OR = estimate, OR, p.value) %>% 
-#   knitr::kable(digits = 3)
 ```
 
 

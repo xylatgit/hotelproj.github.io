@@ -1,6 +1,41 @@
 ---
 title: "Project Report"
-author: "Xiangyi Liu (xl3048)"
-date: "12/2/2020"
-output: html_document
+output: 
+  html_document:
+    code_folding: hide
+    toc: true
+    toc_float: true
+
 ---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+```
+
+## Motivation 
+## Related work
+## Initial Questions
+## Data
+```{r data,echo=FALSE, message=F}
+hotel_whole_df <- read.csv("./data/hotel_bookings.csv",na = c("", "NA", "NULL")) 
+hotel_df <- hotel_whole_df %>% filter(arrival_date_year==2016)
+```
+The data [**Hotel Booking Demand Dataset**](https://www.sciencedirect.com/science/article/pii/S2352340918315191) were collected from two hotels (Resort hotel and City hotel) located in Portugal. It contains hotel booking information between the 1st of July of 2015 and the 31st of August 2017, including bookings that effectively arrived and bookings that were canceled.          
+The dimension of the original published dataset is `r nrow(hotel_whole_df)` rows by `r ncol(hotel_whole_df)` columns. After filtering instances from year 2016, the resulting dataset has `r nrow(hotel_df)` rows.  
+
+
+## Exploratory Analysis
+We aim to answer the following questions using EDA:   
+
+* Where do the guests come from?   
+* How does price vary over the year?    
+* What are the potential factors which could influence the cancellation of both hotels?    
+
+We first used a choropleth map and a donut chart to visualize the proportions of guests' nationality. We observed that most guests come from Europe and top three nationality are Portuguese, with British and French guest come second and third.     
+
+We then tried to explore how the ADR(average daily rate) change over time. Therefore, we used group by summary to produce the mean ADR by month, and plotted these values using line chart. To illustrate how the ADR varies, we also added confidence band to the average line. We observed that the ADR is pretty stable across the years for city hotel, which is reasonable according to the booking demand pattern. For resort hotel, we see a sharp increase in ADR from May to November with the price level peaking during summer. This finding is also intuitive since we expect the demand for resort hotel increases in summer. 
+
+
+
+## Statistical Analysis 
+## Discussion 

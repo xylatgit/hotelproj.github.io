@@ -78,7 +78,7 @@ hotel_df %>%
          yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
 ```
 
-**Comment**:  As shown from the choropleth maps and the donut chart, most guests(39.4%) are Portuguese, with British and French guest come second and third.    
+**Comment**:  As shown from the choropleth maps and the donut chart, most guests(42.8%) are Portuguese, with British and French guest come second and third.    
 
 #### Price Fluctuation 
 ```{r adr_month, message=F,echo=F}
@@ -114,7 +114,8 @@ fig1 =
     add_trace(x = ~ arrival_date_month, y = ~mean_adr, 
           type = "scatter", 
           mode = "lines", 
-          line = list(color='rgb(255,215,0)'))
+          line = list(color='rgb(255,215,0)'),
+          name = 'Mean Resort Hotel' )
 
 fig1 %>% 
   add_trace(data = hotel_adr %>% filter(hotel == "City Hotel"),
@@ -129,18 +130,19 @@ fig1 %>%
           fillcolor =  'rgba(128,0,129,0.2)',
           line = list(color = 'transparent'), 
           showlegend = TRUE, 
-          name = 'Low Resort Hotel' ) %>%  
+          name = 'Low City Hotel' ) %>%  
   
     add_trace(x = ~ arrival_date_month, y = ~mean_adr, 
           type = "scatter", 
           mode = "lines", 
-          line = list(color='rgb(128,0,128)')) %>% 
+          line = list(color='rgb(128,0,128)'),
+          name = 'Mean City Hotel' ) %>% 
   
   layout(title = "Monthly Fluctuation on Average Daily Rate (ADR)", 
          xaxis = list(title = "Month"), 
          yaxis = list(title = "Average Daily Rate"))
 ```
-The average daily rate (ADR) for the city hotel increases slightly between May and September, which make sense considering the booking demand pattern for city hotel.The ADR for the resort hotel has more variation throughout the year, and its ADR reaches its peak during Summer.
+**Comment** We observed that the ADR is pretty stable across the years for city hotel, which is reasonable according to the booking demand pattern. For resort hotel, we see a sharp increase in ADR from May to November with the price level peaking during summer. This finding is also intuitive since we expect the demand for resort hotel increases in summer. 
 
 #### Seasonal Fluctuation
 ```{r month_lineplot, echo=F, message=F, warning=F}

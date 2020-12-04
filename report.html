@@ -9,18 +9,22 @@
 <meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 
-<meta name="author" content="Xiangyi Liu (xl3048)" />
 
 
 <title>Project Report</title>
 
+<script src="site_libs/header-attrs-2.3/header-attrs.js"></script>
 <script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="site_libs/bootstrap-3.3.5/css/journal.min.css" rel="stylesheet" />
 <script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
 <script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
 <script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
 <link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
 <script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
 <link href="site_libs/font-awesome-5.1.0/css/all.css" rel="stylesheet" />
@@ -249,7 +253,73 @@ $(document).ready(function () {
 </style>
 
 <!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
 
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
 
 
 
@@ -259,6 +329,16 @@ $(document).ready(function () {
 
 
 <div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
 
 
 
@@ -309,19 +389,59 @@ $(document).ready(function () {
 
 <div class="fluid-row" id="header">
 
-
-
-<h1 class="title toc-ignore">Project Report</h1>
-<h4 class="author">Xiangyi Liu (xl3048)</h4>
-<h4 class="date">12/2/2020</h4>
-
+<div class="btn-group pull-right">
+<button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
 </div>
 
 
 
+<h1 class="title toc-ignore">Project Report</h1>
+
+</div>
+
+
+<div id="motivation" class="section level2">
+<h2>Motivation</h2>
+</div>
+<div id="related-work" class="section level2">
+<h2>Related work</h2>
+</div>
+<div id="initial-questions" class="section level2">
+<h2>Initial Questions</h2>
+</div>
+<div id="data" class="section level2">
+<h2>Data</h2>
+<p>The data <a href="https://www.sciencedirect.com/science/article/pii/S2352340918315191"><strong>Hotel Booking Demand Dataset</strong></a> were collected from two hotels (Resort hotel and City hotel) located in Portugal. It contains hotel booking information between the 1st of July of 2015 and the 31st of August 2017, including bookings that effectively arrived and bookings that were canceled.<br />
+The dimension of the original published dataset is 119390 rows by 32 columns. After filtering instances from year 2016, the resulting dataset has 56707 rows.</p>
+</div>
+<div id="exploratory-analysis" class="section level2">
+<h2>Exploratory Analysis</h2>
+<p>We aim to answer the following questions using EDA:</p>
+<ul>
+<li>Where do the guests come from?<br />
+</li>
+<li>How does price vary over the year?<br />
+</li>
+<li>What are the potential factors which could influence the cancellation of both hotels?</li>
+</ul>
+<p>We first used a choropleth map and a donut chart to visualize the proportions of guests’ nationality. We observed that most guests come from Europe and top three nationality are Portuguese, with British and French guest come second and third.</p>
+<p>We then tried to explore how the ADR(average daily rate) change over time. Therefore, we used group by summary to produce the mean ADR by month, and plotted these values using line chart. To illustrate how the ADR varies, we also added confidence band to the average line. We observed that the ADR is pretty stable across the years for city hotel, which is reasonable according to the booking demand pattern. For resort hotel, we see a sharp increase in ADR from May to November with the price level peaking during summer. This finding is also intuitive since we expect the demand for resort hotel increases in summer.</p>
+</div>
+<div id="statistical-analysis" class="section level2">
+<h2>Statistical Analysis</h2>
+</div>
+<div id="discussion" class="section level2">
+<h2>Discussion</h2>
+</div>
 
 
 
+</div>
+</div>
 
 </div>
 
@@ -353,7 +473,38 @@ $(document).ready(function () {
 </script>
 
 <!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("hide" === "show");
+});
+</script>
 
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
 
 <!-- dynamically load mathjax for compatibility with self-contained -->
 <script>
