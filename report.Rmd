@@ -42,7 +42,7 @@ hotel_df <- hotel_whole_df %>% filter(arrival_date_year==2016)
 
 > **Primary Data Source** 
 
- [**Hotel Booking Demand Dataset**](https://www.sciencedirect.com/science/article/pii/S2352340918315191) 
+ [Hotel Booking Demand Dataset](https://www.sciencedirect.com/science/article/pii/S2352340918315191) 
  
 > **Variable of Interest**
 
@@ -81,21 +81,13 @@ The original dataset contains information from 2015 to 2017. To avoid the caveat
     + _TotalOfSpecialRequests_: Number of special requests made by the customer (e.g. twin bed or high floor)\
 
 
+> **Data Cleaning and Preprocessing**
 
-
-
-
-
-
-
-
+  + Convert missing value and NAs (both capital and lower-case) to na for R recognition.
+  + Convert numeric to factor variables if needed.
+  + Create _ArrivalSeason_ variable based on _ArrivalDateMonth_ to investigate the effect of seasonality on hotel booking demands.
+  + Create _FalseRoomAssignment_ variable by comparing the difference between _ReservedRoomType_ and _AssignmedRoomType_. 
   
-
-
-
-
-
-
 
 
 
