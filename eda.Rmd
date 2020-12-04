@@ -449,7 +449,7 @@ deposit_prop <-
 
 deposit_prop_plot <- 
   deposit_prop %>%
-  mutate(text_label = str_c("\nCancellation Proportion: ", estimate)) %>%
+  mutate(text_label = str_c("Cancellation Proportion: ", estimate)) %>%
     plot_ly(
     x = ~deposit_type, y = ~estimate, color = ~hotel,
     type = "bar", colors = "viridis", text = ~text_label
@@ -494,9 +494,10 @@ special_request_prop <-
 
 special_request_prop_plot <- 
   special_request_prop %>%
+  mutate(text_label = str_c("# Special Request: ", total_of_special_requests, ", Cancellation Proportion: ", estimate)) %>%
     plot_ly(
     x = ~total_of_special_requests, y = ~estimate, color = ~hotel,
-    type = "bar", colors = "viridis"
+    type = "bar", colors = "viridis", text = ~text_label
   ) %>%
   layout(title = "Canceled Proportion with Total Number of Special Request",
          xaxis = list(title = "Number of Special Requests"),
@@ -536,10 +537,10 @@ customer_prop <-
 
 customer_prop_plot <- 
   customer_prop %>%
-  mutate(customer_type = fct_reorder(customer_type, estimate)) %>%
+  mutate(text_label = str_c("Customer Type: ", customer_type, ", Cancellation Proportion: ", estimate)) %>%
     plot_ly(
     x = ~customer_type, y = ~estimate, color = ~hotel,
-    type = "bar", colors = "viridis"
+    type = "bar", colors = "viridis", text = ~text_label
   ) %>%
   layout(title = "Canceled Proportion with Different Customer Type",
          xaxis = list(title = "Customer Types"),
@@ -555,14 +556,6 @@ Based on the proportion plot, we found that for city hotel, the cancellation pro
 
 #### The Market Segment Effect
 
-For the two hotels analyzed in this report, there are seven market segment designations for customers to reserve rooms. 
-Aviation
-Complementary 
-Corporate
-Direct
-Groups
-Offline travel agents or tour operators, abbreviated as offline TA/TO later
-Online travel agents, abbreviated as online TA later
 
 ```{r segment, echo=F, message=F, warning=F}
 segment_df <- 
@@ -588,13 +581,13 @@ segment_prop <-
 
 segment_prop_plot <- 
   segment_prop %>%
-  mutate(market_segment = fct_reorder(market_segment, estimate)) %>%
+  mutate(text_label = str_c("Market Segments: ", market_segment, ", Cancellation Proportion: ", estimate)) %>%
     plot_ly(
     x = ~market_segment, y = ~estimate, color = ~hotel,
-    type = "bar", colors = "viridis"
+    type = "bar", colors = "viridis", text = ~text_label
   ) %>%
-  layout(title = "Canceled Proportion with Different Customer Type",
-         xaxis = list(title = "Customer Types"),
+  layout(title = "Canceled Proportion with Different Market Segments",
+         xaxis = list(title = "Market Segments"),
          yaxis = list(title = "Proportion of Cancellation", range = c(0, 1)), 
          barmode = "group"
 )
