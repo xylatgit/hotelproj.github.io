@@ -304,4 +304,125 @@ We created the residual deviance plot to detect outliers. And as shown in the pl
 
 ## Random Forest
 
+```{r rf_setup, echo = F, message=F}
+library(reshape2)
+library(randomForest)
+library(dplyr)
+library(ggplot2)
+library(caret)
+
+hotel_ml_rf <- read.csv("./data/hotel_ml.csv") %>% select(-agent)
+```
+
+#### Check NAs
+```{r rf_NA, echo = F, message=F}
+hotel_ml_rf %>% is.na %>% melt %>% 
+  ggplot(data = .,aes(x = Var2, y = Var1)) + geom_tile(aes(fill = value,width=0.95)) +
+  scale_fill_manual(values = c("lightblue","white")) + theme_minimal(14) + 
+  theme(axis.text.x  = element_text(angle=45, vjust=.75), 
+        legend.position='None',
+        legend.direction='horizontal',
+        panel.grid.major=element_blank(),
+        axis.title.x=element_blank(),
+        axis.title.y=element_blank(),
+        plot.margin=unit(c(.1,.1,.1,.1), "cm")) + 
+  labs(title = 'Missing values in each column', subtitle='represented as white bars')
+```
+From the plot we do not any NAs in the dataset.
+
+#### Random Forest Model
+```{r randomForest, echo = F, message = F}
+#Data Partition
+set.seed(123)
+ind <- sample(2, nrow(hotel_ml_rf), replace = T, prob = c(0.8, 0.2))
+hotel_ml_rf$is_canceled <- as.factor(hotel_ml_rf$is_canceled)
+train <- hotel_ml_rf[ind==1,]
+test <- hotel_ml_rf[ind==2,]
+
+#Random Forest
+set.seed(222)
+rf <- randomForest(is_canceled ~ ., data = train, importance = T)
+print(rf)
+#attributes(rf)
+
+#confusion matrix
+rf$confusion %>% knitr::kable(digits = 3)
+
+
+#Predication & Confusion Matrix - train data
+#p1 <- predict(rf, train)
+#confusionMatrix(p1,train$is_canceled)
+
+
+#Predication & Confusion Matrix - test data
+p2 <- predict(rf, test)
+confusionMatrix(p2,test$is_canceled)
+```
+Train:Test = 8:2 \ 
+The error rate for the model is 14.98%. The accuracy of the model on test set is 84.93%.
+
+#### Error Rate
+```{r rf error rate, echo = F, message = F}
+
+#Error rate of Random Forest
+plot(rf, main = "Error Rate")
+
+```
+                         
+From the plot on error rate for random forest model, we can see that the error rate does not change much after 100.
+
+#### Tune mtry
+```{r tune mtry, echo = F, message = F}
+#Tune mtry
+t <-tuneRF(train[,-14], train[,14],
+       stepFactor = 0.5,
+       plot = TRUE,
+       ntreeTry = 200,
+       trace = TRUE,
+       improve = 0.05)
+t
+
+```
+Mtry refers to the number of variables available for splitting at each tree node.\
+For tuning Mtry, we set paramter _ntreeTry_ (number of trees used at tuning step) to 200, since from the error rate plot we can see that ER does not change much after 200.\
+From the plot we can see that the OOB (Out of Bag Error) is very high when Mtry is 1, and goes down at Mtry equal 3, and reaches the bottom at Mtry equals 6, then bounces back.
+
+
+#### Tuned RF model
+```{r tuned model, echo = F, message = F}
+rf_tuned <- randomForest(is_canceled ~ ., data = train,
+                         importance = TRUE, mtry=6, ntree= 200)
+print(rf_tuned)
+
+# Prediction on test set
+confusionMatrix(predict(rf_tuned,test), test$is_canceled) 
+
+```
+
+The accuracy of the tuned model on the test set increase 0.01, not much.
+
+#### Variable Importance
+```{r var import, echo = F, message = F}
+varImpPlot(rf_tuned, main = "Variable Importance")
+```
+
+
+#### Partial Dependece 
+```{r partial depe, echo = F, message = F}
+partialPlot(rf_tuned, train, lead_time, "1", main = "Partial Dependece on Lead Time for Class 1")
+partialPlot(rf_tuned, train, lead_time, "0", main = "Partial Dependece on Lead Time for Class 0")
+```
+To show the predictive ability of the variable, we take _LeadTime_ as an example.\
+The graph above represents the the partial dependece on _LeadTime_ for Class 1 (canceled) and Class 0 (not canceled). \
+If the lead time between booking date and entering/canceled date is greater than 100 days, the model tends to predict the booking will not be canceled.
+
+
+
+
+
+
+
+
+
+
 
