@@ -190,7 +190,9 @@ caret::varImp(logistic_fit) %>%
 ##### We will look more into the three most important features:  
 * Total special requests
 * deposit type 
-* adr   
+* lead time
+* adr 
+
 <br> 
 
 
@@ -221,13 +223,14 @@ special_request_prop <-
 
 special_request_prop_plot <- 
   special_request_prop %>%
+  mutate(text_label = str_c("\nCancellation Proportion: ", estimate, "\nNumber of Special Requests: ", total_of_special_requests)) %>%
     plot_ly(
     x = ~total_of_special_requests, y = ~estimate, color = ~hotel,
-    type = "bar", colors = "viridis"
+    type = "bar", colors = "viridis", text = ~text_label
   ) %>%
   layout(title = "Canceled Proportion with Total Number of Special Request",
          xaxis = list(title = "Number of Special Requests"),
-         yaxis = list(title = "Proportion of Cancellation", range = c(0, 1)), 
+         yaxis = list(title = "Proportion of Cancellation", range = c(0, 1)),
          barmode = "group"
 )
 
@@ -283,6 +286,33 @@ Based on the proportion plot, we found that for both resort and city hotels, res
 
 <br> 
 
+#### The Lead Time Effect
+
+```{r leadtime, echo=F, message=F, warning=F}
+leadtime <-   
+  hotel_df %>%
+  select(hotel, is_canceled, lead_time) %>%
+  mutate(is_canceled = recode(is_canceled, "1" = "Canceled", "0" = "Not Canceled"))
+
+leadtime_box <- 
+  leadtime %>%
+  plot_ly(
+    x = ~is_canceled, y = ~lead_time,
+    type = "box", color = ~hotel, 
+    colors = "viridis"
+  ) %>%
+  layout(title = "Cancellation Distribution with Lead Time",
+         xaxis = list(title = "cancellation"),
+         yaxis = list(title = "lead time (days)"),
+         boxmode = "group"
+         )
+
+leadtime_box
+```
+Based on the box plot, we found that, for both city and resort hotels, the medians of lead time among being canceled reservations are relatively higher than those of not being canceled. 
+
+<br>
+
 ##### The ADR Effect
 ```{r echo=F, message=F, warning=F}
 hotel_df %>% 
@@ -299,6 +329,7 @@ hotel_df %>%
     fv = lm(prop ~ adr, .) %>%  fitted.values()
   ) %>% 
   plot_ly(x = ~adr, y = ~prop, mode = "markers") %>%
+  mutate(text_label = str_c("\nCancellation Proportion: ", prop, "\nADR: ", adr)) %>%
   add_markers(y = ~prop) %>% 
   add_trace(x = ~adr, y = ~fv, mode = "lines") %>% 
   layout(title = "Average Daily Rate (ADR) and Cancellation", 
@@ -384,3 +415,15 @@ We created the residual deviance plot to detect outliers. And as shown in the pl
 
 
 ## Discussion 
+
+##### The results of our selected variables indicate a few important things: 
+* The total number of special requests added during reservation do have a significant relationship with reservation cancellation. Customers who reserved city hotel with zero special requests are more likely to cancel the reservation, compared to the resort hotel. And it follows our expectations; as the city hotel receives most of the reservation for business travelers, who usually have few special requests, but also more likely to modify their travel schedules.
+
+* The relationship between deposit type used for reservation and cancellation analyzed in this report contradicts with out expectation, as well as counters the intuitive: almost all customers reserved rooms with non-refundable deposit would cancel the reservation for both resort and city hotel. Both the logistic regression and EDA bar plot indicate such relationship. Therefore, we applied cross validation to determine the validity of deposit type, and the result demonstrates that the model with or without deposit type variable shows the same prediction accuracy. As a result, we would not consider deposit type for future analysis. 
+
+* The analysis of lead time of reservation shows that the longer the lead time, the higher probability that customers would cancel the reservation, for both city and resort hotel. This result meets our expectation. However, there are many outliers that the reservations were reserved 300 days before check in, we are not sure about their influence to the result. 
+
+<br>
+
+##### Limitations: 
+* We analyzed the data for the entire year 2016, but it is not generalizable to predict for future circumstance, especially during the pandemic and post pandemic period, like 2020 and 2021, at least. During such period, the number of cancellations would significantly increase because of the pandemic, rather than the effects we analyzed above. And customers would ask for more special requests for their safety. All these factors reduces the prediction accuracy of the analysis. 
