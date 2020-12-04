@@ -354,6 +354,7 @@ hotel_df %>%
   ) %>% 
   mutate(
     is_repeated_guest = as.factor(is_repeated_guest),
+    is_repeated_guest = recode(is_repeated_guest, "1" = "Repeated Guest", "0" = "Not Repeated Guest"),
     is_repeated_guest = fct_reorder(is_repeated_guest, n_obs)
     ) %>%
   plot_ly(
@@ -367,6 +368,9 @@ hotel_df %>%
 repeated_prop_df = 
   hotel_df %>% 
   select(hotel, is_canceled, is_repeated_guest) %>% 
+  mutate(
+    is_repeated_guest = recode( is_repeated_guest, "1" = "Repeated Guest", "0" = "Not Repeated Guest")
+    ) %>% 
   group_by(hotel, is_repeated_guest) %>% 
   summarize(
     guest_total = n(),
