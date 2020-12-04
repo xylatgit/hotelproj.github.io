@@ -59,7 +59,48 @@ write.csv(hotel_ml,"./data/hotel_ml.csv",row.names = F)
 
 ```
 
-## Data Description 
+## Overview
+Using existing data, we investigated factors that are associated with - and can potentially be used to predict - hotel booking cancellation.\
+Two types of models are used for prediction - logistic regression and random forest. \
+Categorical variables are selected based on our hypothesis on its association with cancellation, and for numeric variables, we make the selected based on AUC scores.\
+Overall, the logistic regression model achieves an accuracy of 75%. The accuracy for the random forest model is about 86%.
+
+## Variable Selection
+The dataset is quite large (119,390 rows, 32 variables). For a speedy performance of our models, we first selected instances in year 2016 alone (the dataset ranges from 2015 to 2017), which resulted in 56,707 rows.\
+\
+For categorical variables, we selected 8 out of 14 variables based on our hypothesis on their association with _IsCanceled_.\
+\
+For numeric variables, we selected 5 variables based on their AUC scores.
+```{r AUC,echo=FALSE, message=F }
+library(dplyr)
+library(tidyr)
+library(pROC)
+library(purrr)
+library(readr)
+
+ hotel_df_xyl <- read.csv("./data/hotel_bookings.csv",na = c("", "NA", "NULL")) %>%
+   select(where(is.numeric)) %>% select(-agent)
+
+ variable_list <- colnames(hotel_df_xyl)
+ variable_list <- variable_list[-1]
+
+ compute_auc <- function(x) {
+   as.numeric(auc(roc(hotel_df_xyl[["is_canceled"]][!is.na(hotel_df_xyl[[x]])], hotel_df_xyl[[x]][!is.na(hotel_df_xyl[[x]])])))
+ }
+
+ auc_result<-as_tibble(t(combn(variable_list, 1)),
+           .name_repair = ~ c("var_name"))%>%
+   mutate(
+     auc = map_dbl(.x = var_name, compute_auc)
+   ) %>%
+   arrange(-auc)
+ auc_result %>% knitr::kable(digits = 3)
+
+```
+
+An AUC score equals 0.5 implies that the variable is not discriminable between two classes. Thus, we chose variables that had the greatest distances to 0.5.\
+From the AUC score table above, we chose _LeadTime_, _TotalOfSpecialRequests_, _PreviousCancellations_, _adr_, and _BookingChanges_ for our models.
+
 
 ## Logistic Regression  
 
