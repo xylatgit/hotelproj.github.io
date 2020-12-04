@@ -223,7 +223,7 @@ special_request_prop <-
 
 special_request_prop_plot <- 
   special_request_prop %>%
-  mutate(text_label = str_c("\nCancellation Proportion: ", estimate, "\nNumber of Special Requests: ", total_of_special_requests)) %>%
+  mutate(text_label = str_c("Number of Special Requests: ", total_of_special_requests, ", Cancellation Proportion: ", estimate)) %>%
     plot_ly(
     x = ~total_of_special_requests, y = ~estimate, color = ~hotel,
     type = "bar", colors = "viridis", text = ~text_label
@@ -268,7 +268,7 @@ deposit_prop <-
 
 deposit_prop_plot <- 
   deposit_prop %>%
-  mutate(text_label = str_c("\nCancellation Proportion: ", estimate)) %>%
+  mutate(text_label = str_c("Deposit Type: ", deposit_type, ", Cancellation Proportion: ", estimate)) %>%
     plot_ly(
     x = ~deposit_type, y = ~estimate, color = ~hotel,
     type = "bar", colors = "viridis", text = ~text_label
@@ -328,8 +328,8 @@ hotel_df %>%
   mutate(
     fv = lm(prop ~ adr, .) %>%  fitted.values()
   ) %>% 
-  plot_ly(x = ~adr, y = ~prop, mode = "markers") %>%
-  mutate(text_label = str_c("\nCancellation Proportion: ", prop, "\nADR: ", adr)) %>%
+  mutate(text_label = str_c("Cancellation Proportion: ", prop, ", ADR: ", adr)) %>%
+  plot_ly(x = ~adr, y = ~prop, mode = "markers", text = ~text_label) %>%
   add_markers(y = ~prop) %>% 
   add_trace(x = ~adr, y = ~fv, mode = "lines") %>% 
   layout(title = "Average Daily Rate (ADR) and Cancellation", 
