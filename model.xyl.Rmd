@@ -18,32 +18,10 @@ library(caret)
 hotel_df = 
   read.csv("./data/hotel_bookings.csv",na = c("", "NA", "NULL")) %>% 
   mutate_if(is.character, as.factor)
-
-hotel_ml = 
-  hotel_df %>%
-  filter(arrival_date_year==2016) %>%
-  mutate(
-    arrival_season = case_when(
-      arrival_date_month %in% c("October","November","December") ~ "Fall",
-      arrival_date_month %in% c("January","February","March") ~ "Winter",
-      arrival_date_month %in% c("April","May","June") ~ "Spring",
-      TRUE ~ "Summer"
-    ),
-    arrival_season = as.factor(arrival_season),
-    reserved_room_type = as.character(reserved_room_type),
-    assigned_room_type = as.character(assigned_room_type),
-    is_canceled = as.factor(is_canceled),
-    
-    false_room_assignment = case_when(
-      reserved_room_type == assigned_room_type ~ "0",
-      reserved_room_type != assigned_room_type ~ "1"
-    ),
-    false_room_assignment = as.factor(false_room_assignment)) %>%
-    select(adr, booking_changes, previous_cancellations, lead_time, total_of_special_requests, arrival_season, customer_type,  deposit_type, distribution_channel, hotel, meal, market_segment,  reserved_room_type, false_room_assignment) 
-  
+hotel_ml_rf <- read.csv("./data/hotel_ml.csv") %>% select(-agent)
 
 
-hotel_ml %>% is.na %>% melt %>% 
+hotel_ml_rf %>% is.na %>% melt %>% 
   ggplot(data = .,aes(x = Var2, y = Var1)) + geom_tile(aes(fill = value,width=0.95)) +
   scale_fill_manual(values = c("lightblue","white")) + theme_minimal(14) + 
   theme(axis.text.x  = element_text(angle=45, vjust=.75), 
@@ -58,39 +36,23 @@ hotel_ml %>% is.na %>% melt %>%
 ```
 
 
-# ```{r agent distribution}
-# hotel_ml %>% 
-#   ggplot(aes(x=agent))+geom_histogram(aes(y = ..density..),binwidth = 10,color = "grey30", fill = "white")+
-#   geom_density(alpha = .2, fill = "red")
-```
 
-
-The distribution of _agent_ is pretty skewed and non-normal. Either remove all or replace with median.
-I would first try with their median.
-```{r agent, warning = F}
-hotel_ml<-hotel_ml %>%
-  mutate_at(
-    vars(starts_with("agent")), funs(ifelse(is.na(.),median(., na.rm = TRUE),.))
-  ) 
-```
-
-
-```{r randomForest}
+```{r randomForest, echo = F, message = F}
 #Data Partition
 set.seed(123)
-ind <- sample(2, nrow(hotel_ml), replace = T, prob = c(0.8, 0.2))
-hotel_ml$is_canceled <- as.factor(hotel_ml$is_canceled)
-train <- hotel_ml[ind==1,]
-test <- hotel_ml[ind==2,]
+ind <- sample(2, nrow(hotel_ml_rf), replace = T, prob = c(0.8, 0.2))
+hotel_ml_rf$is_canceled <- as.factor(hotel_ml_rf$is_canceled)
+train <- hotel_ml_rf[ind==1,]
+test <- hotel_ml_rf[ind==2,]
 
 #Random Forest
 set.seed(222)
 rf <- randomForest(is_canceled ~ ., data = train, importance = T)
 print(rf)
-attributes(rf)
+#attributes(rf)
 
 #confusion matrix
-rf$confusion
+rf$confusion %>% knitr::kable(digits = 3)
 
 
 #Predication & Confusion Matrix - train data
@@ -101,42 +63,71 @@ confusionMatrix(p1,train$is_canceled)
 #Predication & Confusion Matrix - test data
 p2 <- predict(rf, test)
 confusionMatrix(p2,test$is_canceled)
-
-
-#Error rate of Random Forest
-plot(rf)
-
-#Tune mtry
-t <-tuneRF(train[,-15], train[,15],
-       stepFactor = 0.5,
-       plot = TRUE,
-       ntreeTry = 250,
-       trace = TRUE,
-       improve = 0.05)
-
-rf_tuned <- randomForest(is_canceled ~ ., data = train,
-                         importance = TRUE)
-print(rf_tuned)
-
-
-p3 <- predict(rf_tuned,train)
-confusionMatrix(p3,train$is_canceled)
-
-confusionMatrix(predict(rf_tuned,test), test$is_canceled) #accuracy = 0.8585
-
-
-#Variable Importance
-varImpPlot(rf_tuned, main = "Variable Importance")
-##importance(rf)
-varUsed(rf_tuned)
-
-#Partial Dependence Plot
-partialPlot(rf_tuned, train, lead_time, "1")
-
-                         
 ```
 
 
+#### Error Rate
+```{r rf error rate, echo = F, message = F}
+
+#Error rate of Random Forest
+plot(rf, main = "Error Rate")
+
+```
+                         
+From the plot on error rate for random forest model, we can see that the error rate does not change much after 100.
+
+
+#### Tune mtry
+```{r tune mtry}
+#Tune mtry
+t <-tuneRF(train[,-14], train[,14],
+       stepFactor = 0.5,
+       plot = TRUE,
+       ntreeTry = 200,
+       trace = TRUE,
+       improve = 0.05)
+t
+
+```
+Mtry refers to the number of variables available for splitting at each tree node.\
+For tuning Mtry, we set paramter _ntreeTry_ (number of trees used at tuning step) to 200, since from the error rate plot we can see that ER does not change much after 200.\
+From the plot we can see that the OOB (Out of Bag Error) is very high when Mtry is 1, and goes down at Mtry equal 3, and reaches the bottom at Mtry equals 6, then bounces back.
+
+
+#### Tuned RF model
+```{r tuned model}
+rf_tuned <- randomForest(is_canceled ~ ., data = train,
+                         importance = TRUE, mtry=6, ntree= 200)
+print(rf_tuned)
+
+# Prediction on test set
+confusionMatrix(predict(rf_tuned,test), test$is_canceled) 
+
+```
+The accuracy of the tuned model on the test set increase 0.01, not much.
+
+
+
+```{r}
+#Variable Importance
+varImpPlot(rf_tuned, main = "Variable Importance")
+##importance(rf)
+#varUsed(rf_tuned)
+```
+The left graph tests how worse the model performs without each variable. From the y-axis, we can see that average daily rate (_adr_) has the maximum importance in terms of model accuracy.\
+The right graph shows how pure the nodes are at the end of the tree without each variable.Gini calculates the probability of a specific feature that is classified incorrectly when selected randomly. If the end node of the tree is pure, it means that the node is linked to one single class. We can see that _LeadTime_, _DepositType_, _adr_ stand out of all other variables.
+
+
+
+```{r Partial Dependence,echo=F}
+#Partial Dependence Plot
+partialPlot(rf_tuned, train, lead_time, "1", main = "Partial Dependece on Lead Time for Class 1")
+partialPlot(rf_tuned, train, lead_time, "0", main = "Partial Dependece on Lead Time for Class 0")
+```
+
+To show the predictive ability of the variable, we take _LeadTime_ as an example.\
+The graph above represents the the partial dependece on _LeadTime_ for Class 1 (canceled) and Class 0 (not canceled). \
+If the lead time between booking date and entering/canceled date is greater than 100 days, the model tends to predict the booking will not be canceled.
 
 
 
