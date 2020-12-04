@@ -8,8 +8,20 @@ output:
 
 ---
 
-```{r setup, include=FALSE}
+```{r setup, include=FALSE, echo=FALSE, message=F}
+library(dplyr)
 library(tidyverse)
+library(plotly)
+library(ggplot2)
+library(modelr)
+
+theme_set(theme_minimal() + theme(legend.position = "bottom"))
+options(
+  ggplot2.continuous.colour = "viridis",
+  ggplot2.continuous.fill = "viridis"
+)
+scale_colour_discrete = scale_color_viridis_d
+scale_fill_discrete = scale_fill_viridis_d
 ```
 
 ## Motivation 
@@ -38,4 +50,268 @@ We then tried to explore how the ADR(average daily rate) change over time. There
 
 
 ## Statistical Analysis 
+### Data preprocessing 
+The original dataset contains information from 2015 to 2017. To avoid the caveat of time series and for a speedier performance of our model, we only included the year 2016 for our analysis. In order to identify any seasonality trend over the year, we created a new variable containing the arrival season of the guests. We then mutated the character variables as factors and additionally some numeric variables that would be better explained as factors. To avoid collinearlity, we kept arrival season and exluced arrival month. Finally, to satisfy our aim of predicting booking cancelation, we selected the following variables that we desired to include in our model:  
+<br>
+Outcome of interest:  
+*is_canceled*: Value indicating if the booking was canceled (1) or not (0).  
+<br>
+Possible predictors:  
+*lead_time*: Number of days that elapsed between the entering date of the booking into the PMS and the arrival date.    
+*total_of_special_requests*: Number of special requests made by the customer (e.g. twin bed or high floor).  
+*agent*: ID of the travel agency that made the booking.  
+*previous_cancellations*: Number of previous bookings that were cancelled by the customer prior to the current booking.  
+*adr*: Average Daily Rate.  
+*booking_changes*:Number of changes/amendments made to the booking from the moment the booking was entered on the PMS until the moment of check-in or cancellation.       
+*arrival_season*:Season of arrival date.   
+*meal*:Type of meal booked.  
+*market_segment*:Market segment designation.     
+*distribution_channel*:Booking distribution channel.    
+*reserved_room_type*:Code of room type reserved.  
+*deposit_type*:Indication on if the customer made a deposit to guarantee the booking.  
+*customer_type*: Type of booking.  
+<br>
+
+### Logistic Regression  
+```{r data import,echo=FALSE, message=F}
+hotel_ml = 
+  read_csv("./data/hotel_ml.csv") %>% 
+  mutate(
+    is_canceled = as.factor(is_canceled)
+  ) %>% 
+  mutate_if(is.character, as.factor) %>% 
+  select(-arrival_date_month) %>% 
+  drop_na() 
+```
+
+```{r, include = FALSE, Fecho=FALSE, message=F}
+fullmod = glm(is_canceled ~. , data = hotel_ml, family = binomial())
+finalmod = 
+  stats::step(fullmod, direction = "both") %>% 
+  broom::tidy() %>% 
+  knitr::kable()
+```
+We first tried to predict the output using Logistic regression. The first model we used included all the possible predictors we selected. To perform variable selection, we used stepwise regression. The result shows that the all of our existing variables have statistical significance. We thus fitted this model to our dataset, and generated the following output for the variables with significant odds ratios:  
+```{r test/train split,echo=FALSE, message=F, warning=FALSE}
+set.seed(1234)
+train_df = sample_frac(hotel_ml, 0.8)
+test_df = anti_join(hotel_ml, train_df)
+
+logistic_fit =  
+  train_df %>% 
+  glm(is_canceled ~. , data = ., family = binomial())
+
+logistic_fit %>% 
+  broom::tidy() %>% 
+  mutate(OR = exp(estimate)) %>%
+  select(term, log_OR = estimate, OR, p.value) %>% 
+  filter(OR > 1.9 | OR < 0.2) %>% 
+  arrange(desc(OR)) %>% 
+  knitr::kable(digits = 3, caption = "Logistic Regression Output") 
+```
+**Comment** As we can see from the output, deposit type: non refund has the largest odds ratio(173.389), indicating that the guests with non refundable test are significantly more likely to cancel the bookings compared to no deposit guests. This finding is rather counter-intuitive and also raises the question about the validity of the dataset.  
+<br>
+
+#### Variable Importance 
+We furthur generated the most important variables of our model:  
+```{r variable importance,echo=FALSE, message=F}
+caret::varImp(logistic_fit) %>%
+  arrange(desc(Overall)) %>%
+  filter(Overall > 10) %>% 
+  knitr::kable(digits = 3, caption = "Variable Importance")
+```
+We will look more into the four most important features:  
+* Total special requests
+* deposit type 
+* adr   
+<br> 
+
+
+##### The Special Request Effect
+
+```{r specialrequest, echo=F, message=F, warning=F}
+special_request_df <- 
+  hotel_df %>%
+  mutate(is_canceled = recode(is_canceled, "1" = "Canceled", "0" = "Not Canceled")) %>%
+  select(hotel, is_canceled, total_of_special_requests)
+
+
+special_request_prop <- 
+  special_request_df %>%
+  group_by(total_of_special_requests, hotel) %>%
+  summarize(
+    guest_total = n(), 
+    guest_canceled = sum(is_canceled == "Canceled")
+  ) %>%
+  mutate(
+    prop_test = map2(.x = guest_canceled, .y = guest_total, ~prop.test(x = .x, n = .y)),
+    tidy_test = map(.x = prop_test, ~broom::tidy(.x))
+  ) %>%
+  select(-prop_test) %>%
+  unnest() %>%
+  select(total_of_special_requests, hotel, estimate, conf.low, conf.high)
+
+
+special_request_prop_plot <- 
+  special_request_prop %>%
+    plot_ly(
+    x = ~total_of_special_requests, y = ~estimate, color = ~hotel,
+    type = "bar", colors = "viridis"
+  ) %>%
+  layout(title = "Canceled Proportion with Total Number of Special Request",
+         xaxis = list(title = "Number of Special Requests"),
+         yaxis = list(title = "Proportion of Cancellation", range = c(0, 1)), 
+         barmode = "group"
+)
+
+special_request_prop_plot
+```
+
+Based on the proportion plot, we found that, for city hotel, the cancellation proportion is the highest when the guests didn't ask for any special request. Similarly, for resort hotel, the cancellation proportion is also higher when guests didn't ask for any special request. 
+ 
+<br> 
+
+##### The Deposit Type Effect
+
+```{r deposit, echo=F, message=F, warning=F}
+deposit_df <- 
+  hotel_df %>%
+  mutate(is_canceled = recode(is_canceled, "1" = "Canceled", "0" = "Not Canceled")) %>%
+  select(hotel, is_canceled, deposit_type)
+
+
+deposit_prop <- 
+  deposit_df %>%
+  group_by(deposit_type, hotel) %>%
+  summarize(
+    guest_total = n(), 
+    guest_canceled = sum(is_canceled == "Canceled")
+  ) %>%
+  mutate(
+    prop_test = map2(.x = guest_canceled, .y = guest_total, ~prop.test(x = .x, n = .y)),
+    tidy_test = map(.x = prop_test, ~broom::tidy(.x))
+  ) %>%
+  select(-prop_test) %>%
+  unnest() %>%
+  select(deposit_type, hotel, estimate, conf.low, conf.high)
+
+
+deposit_prop_plot <- 
+  deposit_prop %>%
+  mutate(text_label = str_c("\nCancellation Proportion: ", estimate)) %>%
+    plot_ly(
+    x = ~deposit_type, y = ~estimate, color = ~hotel,
+    type = "bar", colors = "viridis", text = ~text_label
+  ) %>%
+  layout(title = "Canceled Proportion with Deposit Type",
+         xaxis = list(title = "Deposit Type"),
+         yaxis = list(title = "Proportion of Cancellation", range = c(0, 1)), 
+         barmode = "group"
+)
+
+deposit_prop_plot
+```
+
+Based on the proportion plot, we found that for both resort and city hotels, reservations with non-refundable deposit have about 94% and 99% of cancellation respectively, which is significantly higher than other two types of deposits. For reservations with refundable deposit, we found that the cancellation of city hotel is relatively higher than that of resort hotel. This counter intuitive finding confirmed with the previous odds ratios. We therefore suspected the validity of this variable.  
+
+<br> 
+
+##### The ADR Effect
+```{r echo=F, message=F, warning=F}
+hotel_df %>% 
+  select(is_canceled, adr) %>% 
+  group_by(adr) %>% 
+  summarize(
+    total = n(),
+    canceled = sum(is_canceled == 1),
+    prop = round(canceled/total, 2)
+  ) %>% 
+  filter(total > 10) %>% 
+  drop_na() %>% 
+  mutate(
+    fv = lm(prop ~ adr, .) %>%  fitted.values()
+  ) %>% 
+  plot_ly(x = ~adr, y = ~prop, mode = "markers") %>%
+  add_markers(y = ~prop) %>% 
+  add_trace(x = ~adr, y = ~fv, mode = "lines") %>% 
+  layout(title = "Average Daily Rate (ADR) and Cancellation", 
+         xaxis = list(title = "ADR"), 
+         yaxis = list(title = "Cancellation Proportion"),
+         showlegend = F)
+```
+
+From this plot, there is no clear trend detected. We see that the proportion of cancelation slight increases with increase in ADR.
+    
+#### Cross Validation  
+Since we are questioning the validity of deposit type, we fitted the logistic regression models without the deposit type. We then compared the prediction accuracy of the two models:
+```{r ,echo=FALSE, message=F, warning = FALSE}
+logistic_fit_2 = 
+  train_df %>% 
+  glm(is_canceled ~.-deposit_type , data = ., family = binomial())
+
+test_df %>% 
+  add_predictions(logistic_fit) %>% 
+  mutate(
+    prob_model_1 = boot::inv.logit(pred),
+    pred_mod1 = 
+      case_when(
+        prob_model_1 < 0.5 ~ 0,
+        prob_model_1 >= 0.5 ~ 1
+         )) %>% 
+  select(-pred, -prob_model_1) %>% 
+  add_predictions(logistic_fit_2) %>% 
+   mutate(
+    prob_model_2 = boot::inv.logit(pred),
+    pred_mod2 = 
+      case_when(
+        prob_model_2 < 0.5 ~ 0,
+        prob_model_2 >= 0.5 ~ 1
+         )) %>% 
+  select(is_canceled, pred_mod1, pred_mod2) %>% 
+  summarise(
+    model1_accuracy = sum(is_canceled==pred_mod1)/ nrow(test_df),
+    model2_accuracy = sum(is_canceled==pred_mod2)/ nrow(test_df)
+  ) %>% 
+  knitr::kable(digits = 3, 
+               caption = "Model Accuracy",  
+               col.names = c("Model1 accuracy", "Model2 accuracy"))
+```
+We can see that the two models have roughly the same prediction accuracy! We also generated the ROC for comparison:  
+```{r echo=FALSE, message=F}
+library(ROCR)
+
+test.predicted.m1 <- predict(logistic_fit, newdata = test_df, type = "response")
+
+test.predicted.m2 <- predict(logistic_fit_2, newdata = test_df, type = "response")
+
+par(mfrow=c(1, 2))
+
+prediction(test.predicted.m1, test_df$is_canceled) %>%
+  performance(measure = "tpr", x.measure = "fpr") %>%
+  plot()
+
+prediction(test.predicted.m2, test_df$is_canceled) %>%
+  performance(measure = "tpr", x.measure = "fpr") %>%
+  plot()
+```
+
+<br>
+
+#### Model Diagnosis 
+```{r}
+train_df =
+  broom::augment(logistic_fit_2) %>% 
+  mutate(index = 1:n()) 
+
+ggplot(data = train_df, aes(index, .std.resid, color = "viridis")) + 
+  geom_point(alpha = .5) +
+  geom_ref_line(h = 3) + 
+  labs(title = "Residual Deviance plot")
+
+plot(logistic_fit_2, which = 4, id.n = 5)
+```
+We created the residual deviance plot to detect outliers. And as shown in the plot, those standardized residuals that exceed 3 represent possible outliers and may deserve closer attention. Similarly, plotting the cook's distance also signals some potential outliers in our dataset.  
+
+
+
 ## Discussion 
