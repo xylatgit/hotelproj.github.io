@@ -341,7 +341,7 @@ meal_result_df %>%
 
 ```
 
-Based on the proportion plot, we found that for Resort hotel, the cancellation proportion is highest among guests who booked FB meal with comparable size; for City hotel, the cancellation proportion is highest among guests who booked BB meal. Therefore, we could infer that these two meal types might not meet the expectations and needs of guests, which leads them to cancel the order.
+Based on the plots above, for the distribution of the booked meal types, we found that the size of the booked FB meal for both hotels and SC meal for resort hotel were extremely small compared to that of the other booked meal types. Therefore, considering the result of these meal types might not be comparable to others, we just ignore the their effects on the cancellation proportion. Then, according to the proportion plot, we've found that the cancellation proportion of FB meal was indeed distinctly high for Resort hotel, which meet our previous consideration so that we ignored this effect. Otherwise, among all other booked meal type, for Resort Hotel, we found that the cancellation proportion was highest among guests who booked HB meal with comparable size; for City Hotel, the cancellation proportion is highest among guests who booked BB meal. Therefore, we could infer that these two meal types might not meet the expectations and needs of guests, which leads them to cancel the order.
 
 #### The repeated guest effect
 
