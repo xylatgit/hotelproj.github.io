@@ -99,159 +99,30 @@ choropleth maps:
 #           colorscale="Viridis", zmin = 0, zmax = 30)
 ```
 
-#### Logistic Regression :    
 
-data preprocessing:  
-
-total NAs:  
-```{r}
-# table_NA=
-#   hotel_df %>% 
-#   summarise_all(funs(sum(is.na(.))))
-# 
-# t(table_NA) %>% 
-#   knitr::kable()
+```{r data,echo=FALSE, message=F}
+hotel_whole_df <- read.csv("./data/hotel_bookings.csv",na = c("", "NA", "NULL")) 
+hotel_df <- hotel_whole_df %>% filter(arrival_date_year==2016)
 ```
 
 ```{r}
-# hotel_ml = 
-#   hotel_df %>% 
-#   mutate(
-#     arrival_season = case_when(
-#       arrival_date_month %in% c("October","November","December") ~ "Fall",
-#       arrival_date_month %in% c("January","February","March") ~ "Winter",
-#       arrival_date_month %in% c("April","May","June") ~ "Spring",
-#       TRUE ~ "Summer"
-#     ),
-#     arrival_season = as.factor(arrival_season),
-#     reserved_room_type = as.character(reserved_room_type),
-#     assigned_room_type = as.character(assigned_room_type),
-#     false_room_assignment = case_when(
-#       reserved_room_type == assigned_room_type ~ "0",
-#       reserved_room_type != assigned_room_type ~ "1"
-#     ),
-#     false_room_assignment = as.factor(false_room_assignment),
-#     is_canceled = as.factor(is_canceled)) %>% 
-#     select(-c(arrival_date_year, arrival_date_week_number, arrival_date_day_of_month,
-#               arrival_date_month, reservation_status_date, reservation_status, 
-#               agent, company, country, reserved_room_type, assigned_room_type)) 
-```
-
-read in dataset:
-```{r}
-hotel_ml = 
-  read_csv("./data/hotel_ml.csv") %>% 
-  mutate(
-    is_canceled = as.factor(is_canceled)
+hotel_df %>% 
+  select(is_canceled, adr) %>% 
+  group_by(is_canceled, adr) %>% 
+  summarize(
+    count = n()
   ) %>% 
-  mutate_if(is.character, as.factor) %>% 
-  select(-arrival_date_month) %>% 
-  drop_na() 
+  filter(count > 10, is_canceled == 1) %>% 
+  drop_na() %>% 
+  mutate(
+    fv = lm(count ~ adr, .) %>%  fitted.values()
+  ) %>% 
+  plot_ly(x = ~adr, y = ~count, mode = "markers") %>%
+  add_markers(y = ~count) %>% 
+  add_trace(x = ~adr, y = ~fv, mode = "lines") %>% 
+  layout(title = "Average Daily Rate (ADR) and Cancellation", 
+         xaxis = list(title = "ADR"), 
+         yaxis = list(title = "Cancellation Count"),
+         showlegend = F)
 ```
-
-```{r}
-table_NA=
-  hotel_ml %>%
-  summarise_all(funs(sum(is.na(.))))
-
-t(table_NA) %>%
-  knitr::kable()
-```
-
-We used stepwise selection and concluded that all of our existing variables have statistical significance.
-```{r}
-fullmod = glm(is_canceled ~. , data = hotel_ml, family = binomial())
-finalmod = stats::step(fullmod, direction = "both")
-```
-```
-
-train/test split:
-```{r}
-set.seed(1234)
-train_df = sample_frac(hotel_ml, 0.8)
-test_df = anti_join(hotel_ml, train_df)
-```
-
-```{r}
-logistic_fit =  
-  train_df %>% 
-  glm(is_canceled ~. , data = ., family = binomial())
-```
-
-Model output: 
-```{r}
-logistic_fit %>% 
-  broom::tidy() %>% 
-  mutate(OR = exp(estimate)) %>%
-  select(term, log_OR = estimate, OR, p.value) %>% 
-  arrange(desc(OR)) %>% 
-  knitr::kable(digits = 3, caption = "Logistic Regression Output") 
-```
-
-**Comment** As we can see from the output, deposit type: non refund has the largest odds ratio(173.389), indicating that the guests with non refundable test are significantly more likely to cancel the bookings compared to no deposit guests. This finding is rather counter-intuitive and also raises the question about the validity of the dataset.  
-
-We furthur generated the most important variables of our model:  
-```{r variable importance}
-caret::varImp(logistic_fit) %>%
- arrange(desc(Overall)) %>%
- knitr::kable(digits = 3)
-```
-
-We will look more into the four most important features:  
-* Total special requests
-* deposit type 
-* adr  
-(can i use plots from ead?)
-
-Since we are questioning the validity of deposit type, we fitted the logistic regression models withou the deposit type. We then compared the prediction accuracy of the two models using 10 fold cross validation: 
-```{r}
-cv_df = crossv_mc(hotel_ml, 10) 
-cv_df = 
-
-```
-
-```{r}
-# Make predictions
-probabilities <- logistic_fit%>% predict(test_df, type = "response")
-predicted.classes <- ifelse(probabilities > 0.5, "1", "0")
-# Prediction accuracy
-observed.classes <- test_df$is_canceled
-mean(predicted.classes == observed.classes, na.rm = T)
-```
-
-
-use cross validation
-```{r}
-# cv_df = crossv_mc(hotel_ml, 10)
-# cv = 
-# cv_df %>% 
-#   mutate(
-#     train = map(train, as_tibble),
-#     test = map(test, as_tibble),
-#     fit_logistic = map(train, ~glm(is_canceled ~. , data = .x, family = binomial()))
-#   )
-#
-```
-
-
-
-
-fit logistic regression: 
-```{r}
-# fit_logistic = 
-#   train_df %>% 
-#   glm(is_canceled ~. , data = ., family = binomial())
-```
-
-
-model evaluation & diagnoistics 
-possible outliers:
-
-
-Validation of Predicted Values
-```{r}
-# test_predicted <- predict(fit_logistic, newdata = test_df, type = "response")
-```
-
-
 
