@@ -292,6 +292,75 @@ channel_result_df %>%
 
 Based on the proportion plot, we found that the cancellation proportion is the highest among guest who booked the room through the TA/TO channel (“TA” means “Travel Agents” and “TO” means “Tour Operators”) for both hotels. Therefore, we could infer that this kind of channels may exists some problems such as information asymmetry with the hotel website, which could mislead guests when they make the decision. But the actual condition of the hotel might not meet the expectations or needs of guests so that they cancel the order.  
 
+#### The Market Segment Effect
+
+
+```{r segment, echo=F, message=F, warning=F}
+
+library(stringr)
+
+
+segment_df <- 
+  hotel_df %>%
+  mutate(is_canceled = recode(is_canceled, "1" = "Canceled", "0" = "Not Canceled")) %>%
+  select(hotel, is_canceled, market_segment) %>%
+  mutate(market_segment = as.vector(market_segment)) %>%
+  filter(str_detect(market_segment, "Online TA|Offline TA/TO"))
+
+
+segment_n_plot <-
+  segment_df %>%
+  group_by(market_segment, hotel) %>%
+  summarize(
+    n = n()
+  ) %>%
+  plot_ly(
+    x = ~market_segment, y = ~n, color = ~hotel, 
+    type = "bar", colors = "viridis"
+  ) %>%
+    layout(title = "Distribution of Market Segment",
+         xaxis = list(title = "Types of Market Segments"),
+         yaxis = list(title = "Counts"), 
+         barmode = "stack"
+)
+segment_n_plot
+
+
+segment_prop <- 
+  segment_df %>%
+  group_by(market_segment, hotel) %>%
+  summarize(
+    guest_total = n(), 
+    guest_canceled = sum(is_canceled == "Canceled")
+  ) %>%
+  mutate(
+    prop_test = map2(.x = guest_canceled, .y = guest_total, ~prop.test(x = .x, n = .y)),
+    tidy_test = map(.x = prop_test, ~broom::tidy(.x))
+  ) %>%
+  select(-prop_test) %>%
+  unnest() %>%
+  select(market_segment, hotel, estimate, conf.low, conf.high)
+
+
+segment_prop_plot <- 
+  segment_prop %>%
+  mutate(text_label = str_c("Market Segments: ", market_segment, ", Cancellation Proportion: ", estimate)) %>%
+    plot_ly(
+    x = ~market_segment, y = ~estimate, color = ~hotel,
+    type = "bar", colors = "viridis", text = ~text_label
+  ) %>%
+  layout(title = "Canceled Proportion with Different Market Segments",
+         xaxis = list(title = "Market Segments"),
+         yaxis = list(title = "Proportion of Cancellation", range = c(0, 1)), 
+         barmode = "group"
+)
+
+segment_prop_plot
+```
+
+From the distribution bar plot, we found that there are more customers reserve the room through online travel agents. From the proportion plot, we found that can proportion of cancellation among online TA and offline TA/TO of city hotel are similar. While customers who reserved through Offline TA/TO are much lower. 
+
+
 #### Meal type
 
 ```{r, echo=F, message=F, warning=F}
@@ -609,63 +678,3 @@ customer_prop_plot
 From the distribution bar plot, we can see that majority of the customers the two hotels received were transient customers, and some of transient party customers. There are only a few group or contract customers. Based on the proportion plot, we found that for city hotel, the cancellation proportion is significantly higher among contract and transient customers. While for resort hotel, the cancellation proportion is significantly higher among transient party and transient customers. 
 
 
-#### The Market Segment Effect
-
-
-```{r segment, echo=F, message=F, warning=F}
-segment_df <- 
-  hotel_df %>%
-  mutate(is_canceled = recode(is_canceled, "1" = "Canceled", "0" = "Not Canceled")) %>%
-  select(hotel, is_canceled, market_segment)
-
-segment_n_plot <-
-  segment_df %>%
-  group_by(market_segment, hotel) %>%
-  summarize(
-    n = n()
-  ) %>%
-  plot_ly(
-    x = ~market_segment, y = ~n, color = ~hotel, 
-    type = "bar", colors = "viridis"
-  ) %>%
-    layout(title = "Distribution of Market Segment",
-         xaxis = list(title = "Types of Market Segments"),
-         yaxis = list(title = "Counts"), 
-         barmode = "stack"
-)
-segment_n_plot
-
-
-segment_prop <- 
-  segment_df %>%
-  group_by(market_segment, hotel) %>%
-  summarize(
-    guest_total = n(), 
-    guest_canceled = sum(is_canceled == "Canceled")
-  ) %>%
-  mutate(
-    prop_test = map2(.x = guest_canceled, .y = guest_total, ~prop.test(x = .x, n = .y)),
-    tidy_test = map(.x = prop_test, ~broom::tidy(.x))
-  ) %>%
-  select(-prop_test) %>%
-  unnest() %>%
-  select(market_segment, hotel, estimate, conf.low, conf.high)
-
-
-segment_prop_plot <- 
-  segment_prop %>%
-  mutate(text_label = str_c("Market Segments: ", market_segment, ", Cancellation Proportion: ", estimate)) %>%
-    plot_ly(
-    x = ~market_segment, y = ~estimate, color = ~hotel,
-    type = "bar", colors = "viridis", text = ~text_label
-  ) %>%
-  layout(title = "Canceled Proportion with Different Market Segments",
-         xaxis = list(title = "Market Segments"),
-         yaxis = list(title = "Proportion of Cancellation", range = c(0, 1)), 
-         barmode = "group"
-)
-
-segment_prop_plot
-```
-
-From the distribution bar plot, we found that most of the customers reserved the two hotels through online travel agent, and some of them reserved through offline travel agent or tour operators. We also observed some grouped and direct reservations. Only a few corporate, complementary, and aviation reservations observed. Based on the proportion plot, we found that for city hotel, the cancellation proportion is significantly higher among grouped customers, and relatively higher among offline TA/TO and online TA  reservation customers. For the resort hotel, the grouped customers and customers reserved through online TA has relatively higher cancellation proportion than other types of customers. 
