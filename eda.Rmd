@@ -160,7 +160,7 @@ month_line<-hotel_df %>%
   
 ggplotly(month_line)
 ```
-City hotel has the most booking in Spring (May-June) and Autumn (October); the number of bookings for the resort hotel has less fluctuation compared to that of the city hotel. The booking demand goes down slightly from June to September for the resort hotel. 
+**Comment**City hotel has the most booking in Spring (May-June) and Autumn (October); the number of bookings for the resort hotel has less fluctuation compared to that of the city hotel. The booking demand goes down slightly from June to September for the resort hotel. 
 
 ```{r leadtime vs adr, echo=F, message=F}
 leadtime_adr_plot <- hotel_df %>% select(hotel, adr, lead_time) %>%
@@ -173,16 +173,15 @@ leadtime_adr_plot <- hotel_df %>% select(hotel, adr, lead_time) %>%
   ) %>%
   ggplot(aes(x = lead_time, y = avg_adr, group = hotel, color = hotel))+
   geom_line()+
-  geom_pointrange(aes(ymin = avg_adr-sd_adr, ymax = avg_adr+sd_adr))
+  geom_pointrange(aes(ymin = avg_adr-sd_adr, ymax = avg_adr+sd_adr))+
+  labs(title = "ADR vs Lead Time", x = "Lead Time (Months)", y = "Average Daily Rate")
   
  ggplotly(leadtime_adr_plot) 
   
- 
 ```
 
-
-
-
+**Comment** Unlike what we expect, there is no significant association between low rate and long lead time.\
+From the plot above, we can see that although the trend of mean adr is decreasing as the lead time increases, each data point varies a lot. Also, there is only a few instances in which the lead time is greater than one year, it may explains the few variation as the lead time increases. 
 
 
 #### Potential influence factors for cancellation
