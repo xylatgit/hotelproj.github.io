@@ -16,7 +16,7 @@ No one would ever refuse a nice, relaxing vacation. Many people would start plan
 
 However, things happen in life. Sometimes our trips have to be canceled. For hotel managers, it is important to measure the probability of order cancellation and plan ahead. 
 
-As a traveler, you may have wondered what is the best time of the year to book a hotel room? Or how long should I plan to stay to get a optimal daily rate? What type of room might be my best fit when I bring my kids? As a hotel manager, you may interested in whether the order will be canceled and what measures should I take ahead of time to effectively avoid the economic risk.
+As a traveler, you may have wondered what is the best time of the year to book a hotel room? Or what type of room might be my best fit when I bring my kids? As a hotel manager, you may interested in whether the order will be canceled and what measures should I take ahead of time to effectively avoid the economic risk.
 
 Luckily, the dataset we worked on had the potential to answer these questions, and you will find answers to these questions in following analysis.
 

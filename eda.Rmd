@@ -162,31 +162,28 @@ ggplotly(month_line)
 ```
 City hotel has the most booking in Spring (May-June) and Autumn (October); the number of bookings for the resort hotel has less fluctuation compared to that of the city hotel. The booking demand goes down slightly from June to September for the resort hotel. 
 
-
-
-#### Room Type Investigation
-```{r roomType, echo=F,message=F,warning=F}
-rmType_adr_box<-hotel_df %>%
-  select(hotel,assigned_room_type,adr) %>%
-  ggplot(aes(x = assigned_room_type, y = adr, fill = hotel))+
-  geom_boxplot(position = position_dodge(1,preserve = "single"))+
-  ylim(-10,350)+
-  labs(x="Assigned Room Type",y = "ADR",title = "Assigned Room Type vs. ADR - Box")
-
-
-
-rmType_adr_line<-hotel_df %>%
-  select(hotel,assigned_room_type,adr) %>%
-  group_by(hotel,assigned_room_type) %>%
-  summarize(adr=mean(adr)) %>%
-  ggplot(aes(x = assigned_room_type, y = adr,color = hotel,group=hotel))+
+```{r leadtime vs adr, echo=F, message=F}
+leadtime_adr_plot <- hotel_df %>% select(hotel, adr, lead_time) %>%
+  mutate(lead_time = round(lead_time/30)) %>%
+  group_by(lead_time) %>%
+  summarize(
+    hotel = hotel,
+    avg_adr = mean(adr),
+    sd_adr = sd(adr)
+  ) %>%
+  ggplot(aes(x = lead_time, y = avg_adr, group = hotel, color = hotel))+
   geom_line()+
-  ylim(-10,250)+
-  labs(x = "Assigned Room Type", y = "ADR", title = "Assigned Room Type vs. ADR - Line")
-
-library(patchwork)
-rmType_adr_box/rmType_adr_line
+  geom_pointrange(aes(ymin = avg_adr-sd_adr, ymax = avg_adr+sd_adr))
+  
+ ggplotly(leadtime_adr_plot) 
+  
+ 
 ```
+
+
+
+
+
 
 #### Potential influence factors for cancellation
 
