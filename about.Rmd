@@ -14,7 +14,7 @@ _image source: google_
 No one would ever refuse a nice, relaxing vacation. Many people would start planning their trip ahead of time. They may begin to think about the place they want to visit, the extraordinary cuisine they can't wait to enjoy, and most importantly, the hotel where they would spend a large amount of time during their vacation. 
 
 
-However, things happen in life. Sometimes our trips have to be canceled. For hotel managers, it is important to measure the probability of order cancellation and plan ahead. 
+However, things happen in life. Sometimes our trips have to be canceled. For hotel managers, it is important to measure the probability of booking cancellation and plan ahead. 
 
 As a traveler, you may have wondered what is the best time of the year to book a hotel room? Or what type of room might be my best fit when I bring my kids? As a hotel manager, you may interested in whether the order will be canceled and what measures should I take ahead of time to effectively avoid the economic risk.
 
@@ -26,4 +26,7 @@ Luckily, the dataset we worked on had the potential to answer these questions, a
 _**Hotel Booking Demand Data**_ is found on  [Kaggle](https://www.kaggle.com/jessemostipak/hotel-booking-demand), and it is originally published in the article [**Hotel Booking Demand Dataset**](https://www.sciencedirect.com/science/article/pii/S2352340918315191). The data was initially cleaned by Thomas Mock and Antoine Bichat, and our group tidy the data further to better serve our purposes.
 
 ### Screencast
+You can find our screencast [here](https://www.youtube.com/watch?v=exxpg1wCm1Y)
 
+### Repository
+You can find our screencast [here](https://github.com/xylatgit/hotelproj.github.io.git)
